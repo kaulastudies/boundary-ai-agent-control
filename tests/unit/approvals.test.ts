@@ -17,7 +17,12 @@ const action = proposedAgentActionSchema.parse({
   ticketId: "SYNTHETIC-200",
   amountInr: 7_500,
 });
-const decision = evaluateAction(compilePolicy(supportPolicy), action);
+const compiled = compilePolicy(supportPolicy);
+const decision = evaluateAction(compiled, action);
+const binding = {
+  actionFingerprint: "a".repeat(64),
+  policyVersion: compiled.sourcePolicyVersion,
+};
 
 function store() {
   return new InMemoryApprovalStore({
@@ -27,7 +32,11 @@ function store() {
 }
 
 function pendingApproval() {
-  return store().create(decision, new Date("2026-07-15T13:00:00.000Z"));
+  return store().create(
+    decision,
+    new Date("2026-07-15T13:00:00.000Z"),
+    binding,
+  );
 }
 
 describe("in-memory approval lifecycle", () => {
@@ -42,6 +51,7 @@ describe("in-memory approval lifecycle", () => {
     const pending = approvals.create(
       decision,
       new Date("2026-07-15T13:00:00.000Z"),
+      binding,
     );
     expect(
       approvals.approve(pending.id, "reviewer-1", "Within support exception")
@@ -54,6 +64,7 @@ describe("in-memory approval lifecycle", () => {
     const pending = approvals.create(
       decision,
       new Date("2026-07-15T13:00:00.000Z"),
+      binding,
     );
     expect(
       approvals.reject(pending.id, "reviewer-1", "Insufficient evidence")
@@ -66,6 +77,7 @@ describe("in-memory approval lifecycle", () => {
     const pending = approvals.create(
       decision,
       new Date("2026-07-15T13:00:00.000Z"),
+      binding,
     );
     expect(approvals.expire(pending.id).status).toBe("EXPIRED");
   });
@@ -75,6 +87,7 @@ describe("in-memory approval lifecycle", () => {
     const pending = approvals.create(
       decision,
       new Date("2026-07-15T13:00:00.000Z"),
+      binding,
     );
     approvals.reject(pending.id, "reviewer-1", "Rejected");
     expect(() =>
@@ -87,6 +100,7 @@ describe("in-memory approval lifecycle", () => {
     const pending = approvals.create(
       decision,
       new Date("2026-07-15T13:00:00.000Z"),
+      binding,
     );
     expect(() =>
       issueSimulatedRefund(action, { decision, approval: pending }),

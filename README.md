@@ -1,18 +1,21 @@
 # BOUNDARY
 
-BOUNDARY is an OpenAI Build Week project for making agent behavior explicit, enforceable, and auditable. Stage 2A provides a framework-independent, deterministic policy engine beneath the existing Next.js application shell.
+BOUNDARY is an OpenAI Build Week project for making agent behavior explicit, enforceable, and auditable. Stage 2B completes a framework-independent deterministic golden path beneath the unchanged Next.js application shell.
 
 ## Current capabilities
 
-- strict Zod schemas for authored and compiled policies, normalized rules, proposed actions, enforcement decisions, approvals, and audit events
+- strict Zod schemas for policies, rules, actions, decisions, approvals, and audit events
 - deterministic `ALLOW`, `REDACT_AND_ALLOW`, `ROUTE_PRIVATELY`, `REQUIRE_APPROVAL`, and `BLOCK` decisions
 - explicit-block precedence and default-deny behavior
-- a support policy with a ₹5,000 refund threshold, cloud PII redaction, private transcript routing, external-email approval, and prohibited-action blocking
-- in-memory pending, approved, rejected, and expired approval states
-- immutable audit events for compilation, evaluation, approval, and simulated execution
-- side-effect-free ticket-read, refund, and email simulations
+- deterministic support-context classification
+- removal of classified phone and payment fields before cloud-bound simulation, followed by re-evaluation
+- private-zone transformation and re-evaluation with routing-loop prevention
+- exact-action, policy-version-bound approval continuation
+- idempotent evaluation, approval creation/resolution, continuation, and simulated execution
+- an append-only, queryable in-memory audit ledger with injected IDs and clocks
+- a complete synthetic ticket-to-follow-up workflow using side-effect-free tools only
 
-No Stage 2A module calls OpenAI or any network, database, payment system, or email provider. Model output cannot authorize execution; only deterministic `ALLOW` decisions or a matching approved human request can pass the simulated execution guard.
+No current module calls OpenAI or any network, database, payment system, or email provider. Model output cannot authorize execution; only deterministic allow decisions or a matching approved human request can pass the simulated execution guard.
 
 ## Stack
 
@@ -20,7 +23,7 @@ No Stage 2A module calls OpenAI or any network, database, payment system, or ema
 - strict TypeScript
 - Tailwind CSS
 - Zod for runtime schemas
-- Vitest for unit tests
+- Vitest for deterministic tests
 - the official OpenAI JavaScript SDK, reserved for a future server-only adapter
 - npm as the only package manager
 
@@ -46,26 +49,25 @@ npm run format       # format repository files
 npm run format:check # verify formatting
 npm run lint         # run ESLint
 npm run typecheck    # run strict TypeScript checks
-npm test             # run deterministic unit tests once
-npm run test:watch   # run unit tests in watch mode
+npm test             # run deterministic tests once
+npm run test:watch   # run tests in watch mode
 npm run build        # create a production build
 npm start            # serve a production build
 ```
 
 ## Repository map
 
-- `src/domain/policy/` — policy, rule, and decision vocabularies.
-- `src/domain/enforcement/` — proposed-action schemas and the pure evaluator.
-- `src/domain/approvals/` — approval lifecycle schema.
-- `src/domain/audit/` — immutable audit-event schemas and construction.
-- `src/application/policy-compiler/` — authored-policy normalization.
-- `src/application/approvals/` — deterministic in-memory approval lifecycle.
-- `src/adapters/tools/simulated/` — guarded, side-effect-free tool simulations.
+- `src/domain/` — policies, actions, decisions, approvals, and immutable audit-event contracts.
+- `src/application/policy-compiler/` — human-authored policy normalization.
+- `src/application/approvals/` — exact-action-bound in-memory approval lifecycle.
+- `src/application/audit/` — append-only ordered in-memory audit ledger.
+- `src/application/control-flow/` — classification, transformations, fingerprints, orchestration, and idempotency.
+- `src/adapters/tools/simulated/` — guarded, side-effect-free ticket, refund, and email simulations.
 - `src/fixtures/` — synthetic support-case policy data.
 - `src/app/` — unchanged Next.js App Router shell.
-- `tests/unit/` — deterministic control-core tests.
-- `docs/ARCHITECTURE.md` — module boundaries, precedence, and dependency rules.
+- `tests/unit/` — deterministic domain and orchestration tests.
+- `docs/ARCHITECTURE.md` — module boundaries, state transitions, and dependency rules.
 
 ## Provider and security boundary
 
-BOUNDARY uses only OpenAI's supported APIs through the official SDK when model integration is added. Do not add LLM7, external model providers, custom proxies, localhost model gateways, or OpenAI-compatible endpoint shims. Future model calls belong in server-only adapters and must use the Responses API.
+BOUNDARY will use only OpenAI's supported APIs through the official SDK when model integration is explicitly added. Do not add LLM7, external model providers, custom proxies, localhost model gateways, or OpenAI-compatible endpoint shims. Future model calls belong in server-only adapters and must use the Responses API.

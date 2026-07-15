@@ -63,6 +63,7 @@ describe("immutable audit events", () => {
         occurredAt,
         correlationId: "flow-1",
         type: "APPROVAL_CREATED",
+        policyId: compiled.id,
         approvalId: "approval-1",
         actionId: emailAction.id,
       }),
@@ -71,6 +72,7 @@ describe("immutable audit events", () => {
         occurredAt,
         correlationId: "flow-1",
         type: "APPROVAL_RESOLVED",
+        policyId: compiled.id,
         approvalId: "approval-1",
         actionId: emailAction.id,
         status: "APPROVED",
@@ -81,6 +83,8 @@ describe("immutable audit events", () => {
         occurredAt,
         correlationId: "flow-1",
         type: "SIMULATED_EXECUTION",
+        policyId: compiled.id,
+        approvalId: null,
         actionId: readAction.id,
         tool: "READ_SUPPORT_TICKET",
         outcome: "SIMULATED_SUCCESS",
@@ -123,6 +127,10 @@ describe("side-effect-free simulated tools", () => {
     const pending = approvals.create(
       decision,
       new Date("2026-07-15T13:00:00.000Z"),
+      {
+        actionFingerprint: "b".repeat(64),
+        policyVersion: compiled.sourcePolicyVersion,
+      },
     );
     const approved = approvals.approve(
       pending.id,

@@ -5,12 +5,23 @@ import {
   sensitiveDataKindSchema,
 } from "@/domain/policy/schemas";
 
+export const supportContextSchema = z
+  .object({
+    summary: z.string().min(1),
+    phone: z.string().min(1).optional(),
+    paymentReference: z.string().min(1).optional(),
+  })
+  .strict();
+
 const actionEnvelopeSchema = z.object({
   id: z.string().min(1),
   actorId: z.string().min(1),
   risk: z.enum(["LOW", "RISKY"]),
   sensitiveData: z.array(sensitiveDataKindSchema),
   processingRoute: processingRouteSchema,
+  executionZone: z.enum(["STANDARD", "PRIVATE"]).default("STANDARD"),
+  routingHistory: z.array(z.enum(["STANDARD", "PRIVATE"])).default([]),
+  supportContext: supportContextSchema.optional(),
 });
 
 const readSupportTicketActionSchema = actionEnvelopeSchema

@@ -1,25 +1,27 @@
 # Hackathon Changelog
 
+## Stage 2B — Deterministic orchestration and golden path
+
+- Added a framework-independent control-flow service composing compilation, classification, evaluation, transformation, approval, continuation, simulation, and auditing.
+- Added an append-only in-memory audit ledger with immutable ordering, correlation queries, and injected IDs/time.
+- Added phone/payment removal with category-only auditing and mandatory transformed-action re-evaluation.
+- Added private execution-zone routing, transformed-action re-evaluation, and routing-loop prevention.
+- Bound approvals to the SHA-256 fingerprint of the exact normalized action and compiled policy version.
+- Added expiration, rejection, conflicting-resolution, substituted-action, duplicate-continuation, and duplicate-execution guards.
+- Added a synthetic support workflow from ticket read through approved outbound follow-up.
+- Added deterministic tests for the complete Stage 2B safety and audit timeline.
+
 ## Stage 2A — Deterministic policy engine
 
 - Added strict Zod schemas for policies, rules, actions, decisions, approvals, and audit events.
-- Added five deterministic decisions: `ALLOW`, `REDACT_AND_ALLOW`, `ROUTE_PRIVATELY`, `REQUIRE_APPROVAL`, and `BLOCK`.
-- Added safety-first precedence with explicit block rules first and unmatched actions blocked by default.
-- Added the synthetic support policy: ₹5,000 refund threshold, cloud PII redaction, private transcript routing, external-email approval, and prohibited-action blocking.
-- Added an in-memory approval lifecycle with immutable pending, approved, rejected, and expired snapshots.
-- Added immutable audit-event construction for compilation, evaluation, approvals, and simulated execution.
-- Added guarded, side-effect-free ticket, refund, and email simulations.
-- Added comprehensive deterministic unit coverage with no network, database, provider, payment, or email dependency.
+- Added five deterministic decisions and safety-first precedence with unmatched actions blocked by default.
+- Added the synthetic support policy, approval lifecycle, immutable audit events, and guarded simulated tools.
 
 ## Stage 1 — Repository foundation
 
-- Scaffolded a Next.js App Router application directly at the repository root.
-- Enabled strict TypeScript, Tailwind CSS, ESLint, Prettier, and Vitest.
-- Added Zod and the official OpenAI JavaScript SDK as foundation dependencies.
-- Added a polished, static BOUNDARY application shell with no model calls or policy engine behavior.
-- Documented architecture boundaries, collaboration practices, environment variables, and verification commands.
-- Added a smoke test for the test runner.
+- Scaffolded the Next.js App Router application and strict TypeScript/npm toolchain.
+- Added Tailwind CSS, ESLint, Prettier, Zod, Vitest, the static shell, documentation, and security guidance.
 
 ## Next
 
-Stage 2B will compose the control modules into one deterministic application service and golden-path scenario with an in-memory audit ledger, concrete redaction/private-routing transformations, approval continuation, and end-to-end tests. OpenAI and UI integration remain deferred.
+Stage 3 will add a server-only, non-authoritative OpenAI interpretation and adversarial-generation boundary using the official SDK, Responses API, `gpt-5.6`, structured Zod validation, and deterministic regression capture. The deterministic engine will remain the sole execution authority.

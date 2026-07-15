@@ -1,71 +1,70 @@
 # BOUNDARY Architecture
 
-## Stage 2A scope
+## Stage 2B scope
 
-BOUNDARY remains one Next.js deployable, but its control core is framework-independent. Stage 2A adds deterministic policy compilation, evaluation, approvals, audit events, and simulated tools. It adds no UI behavior, route handler, OpenAI request, live network, database, payment, or email integration.
+BOUNDARY remains one Next.js deployable with a framework-independent control core. Stage 2B composes policy compilation, deterministic classification and evaluation, transformation, approval, simulated execution, and audit recording into a complete local workflow. It adds no UI behavior, route handler, OpenAI request, live network, database, payment, or email integration.
 
-## Implemented modules
+## Implemented module map
 
-| Concern             | Path                                                    | Responsibility                                                                                            |
-| ------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Policy schemas      | `src/domain/policy/schemas.ts`                          | Zod schemas and types for authored policies, compiled policies, normalized rules, and decision vocabulary |
-| Policy compiler     | `src/application/policy-compiler/compile-policy.ts`     | Validate human-authored policy and produce normalized deterministic rules                                 |
-| Enforcement schemas | `src/domain/enforcement/schemas.ts`                     | Validate proposed actions and ensure only allow decisions authorize execution                             |
-| Enforcement engine  | `src/domain/enforcement/evaluate-action.ts`             | Pure rule matching, precedence, redaction metadata, and default deny                                      |
-| Approval schema     | `src/domain/approvals/schemas.ts`                       | Validate pending, approved, rejected, and expired requests                                                |
-| Approval workflow   | `src/application/approvals/in-memory-approval-store.ts` | Create and resolve immutable approval snapshots using injected time and IDs                               |
-| Audit events        | `src/domain/audit/`                                     | Validate and freeze compilation, evaluation, approval, and simulated-execution events                     |
-| Simulated tools     | `src/adapters/tools/simulated/index.ts`                 | Return synthetic results only after deterministic or human approval authorization                         |
-| Support fixture     | `src/fixtures/support-policy.ts`                        | Define the synthetic ₹5,000 support policy without customer data                                          |
-| Tests               | `tests/unit/`                                           | Exercise policy conflicts, default deny, approvals, audits, and guarded simulations                       |
+| Concern                          | Path                                                    | Responsibility                                                                    |
+| -------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Policy and decision contracts    | `src/domain/policy/`                                    | Authored/compiled policy, normalized rule, and decision schemas                   |
+| Action and enforcement contracts | `src/domain/enforcement/`                               | Proposed action schema, execution zones, support context, and validated decisions |
+| Deterministic evaluator          | `src/domain/enforcement/evaluate-action.ts`             | Safety-first matching and default deny                                            |
+| Approval contract                | `src/domain/approvals/`                                 | Exact action fingerprint, policy version, state, and resolution metadata          |
+| Audit contract                   | `src/domain/audit/`                                     | Value-free immutable event schemas for every control transition                   |
+| Policy compiler                  | `src/application/policy-compiler/`                      | Human-authored policy normalization                                               |
+| Approval store                   | `src/application/approvals/`                            | Idempotent creation and immutable lifecycle snapshots                             |
+| Audit ledger                     | `src/application/audit/`                                | Append-only ordered events, correlation queries, injected IDs, and injected time  |
+| Transformations                  | `src/application/control-flow/transform-action.ts`      | Context classification, PII removal, private-zone routing, and loop prevention    |
+| Action fingerprint               | `src/application/control-flow/action-fingerprint.ts`    | SHA-256 binding for exact-action continuation                                     |
+| Orchestrator                     | `src/application/control-flow/boundary-control-flow.ts` | Golden-path composition and idempotency boundaries                                |
+| Simulated tools                  | `src/adapters/tools/simulated/`                         | Synthetic execution guarded by deterministic or human authorization               |
 
-## Decision precedence
+## Orchestration flow
 
-When multiple rules match, the evaluator applies this safety ordering before rule priority and stable rule ID ordering:
+1. Validate and deterministically classify the proposed action.
+2. Compile the human-authored policy once and audit its use once per correlation.
+3. Evaluate the action and record only decision metadata, never the action payload.
+4. For `REDACT_AND_ALLOW`, remove classified phone/payment fields, record category names, and re-evaluate.
+5. For `ROUTE_PRIVATELY`, set `executionZone` and processing route to private, record the transition, and re-evaluate.
+6. For `REQUIRE_APPROVAL`, hash and preserve the exact normalized action and compiled policy version, then create one pending request.
+7. Continue only if the matching request is approved and unexpired.
+8. Execute one side-effect-free tool at most once and append one execution event.
+9. Return prior immutable results for identical retries; reject conflicting resolution, action substitution, or routing loops.
 
-1. `BLOCK`
-2. `REQUIRE_APPROVAL`
-3. `ROUTE_PRIVATELY`
-4. `REDACT_AND_ALLOW`
-5. `ALLOW`
+## Decision and transformation safety
 
-If no rule matches, the result is `BLOCK`. `ALLOW` and `REDACT_AND_ALLOW` are the only decisions that directly set `authorizedForExecution`. `REQUIRE_APPROVAL` can reach a simulated tool only with a matching `APPROVED` request. A model has no authority field or execution bypass in this flow.
+Decision precedence remains `BLOCK`, `REQUIRE_APPROVAL`, `ROUTE_PRIVATELY`, `REDACT_AND_ALLOW`, then `ALLOW`. Unmatched actions are blocked. Routing and redaction are transitions, not authorization shortcuts: each transformed action is parsed and evaluated again.
 
-## Support-case policy
+The action fingerprint covers the complete normalized action, including values, classifications, execution zone, and routing history. The fingerprint is retained only in the in-memory approval record; audit events contain IDs, policy metadata, decision metadata, category names, zones, and outcomes but never original support-context values.
 
-The human-authored fixture compiles into explicit rules that:
+## Idempotency boundaries
 
-- block audit-log deletion at the highest precedence;
-- require approval for refunds above ₹5,000;
-- require approval for external email;
-- route support transcripts privately instead of sending them to a cloud route;
-- redact phone and payment classifications before cloud processing;
-- allow refunds at or below ₹5,000;
-- allow synthetic support-ticket reads; and
-- block everything else by default.
+- policy-compilation audit: once per correlation
+- evaluation: once per correlation and exact action fingerprint
+- approval creation: once per flow and exact action binding
+- approval resolution: identical retries return the prior result; conflicting retries fail
+- continuation: requires an exact fingerprint and policy-version match
+- execution: once per flow; repeated continuation returns the original result
 
-## Dependency direction
+## Audit timeline
 
-`src/domain/` imports no Next.js, React, OpenAI SDK, or adapter module. `src/application/` coordinates domain behavior. `src/adapters/` may depend on domain contracts but domain code never depends on adapters. `src/app/` remains separate and does not yet invoke the control core.
-
-All entry data is parsed with Zod. The deterministic evaluator is authoritative. Future GPT-5.6 output may propose a policy interpretation or adversarial scenario, but it must be validated and compiled through this control boundary and can never directly authorize an action.
-
-## Audit model
-
-Audit events are immutable validated snapshots for:
+The append-only ledger supports ordered immutable events and correlation queries. It exposes no mutation or deletion method. Event types are:
 
 - `POLICY_COMPILED`
+- `ACTION_CLASSIFIED`
 - `ACTION_EVALUATED`
+- `ACTION_REDACTED`
+- `ACTION_ROUTED_PRIVATELY`
 - `APPROVAL_CREATED`
 - `APPROVAL_RESOLVED`
 - `SIMULATED_EXECUTION`
 
-Stage 2A defines event data but deliberately does not persist or transmit it.
+## Dependency direction
 
-## Stage 2B boundary
-
-Stage 2B should add one application-level use case that composes compilation, evaluation, approvals, redaction/private-routing transformations, simulation, and an in-memory audit ledger. It should remain local and deterministic. Route handlers and UI integration should be considered only after the orchestration API and full golden-path tests are stable.
+`src/domain/` imports no Next.js, React, OpenAI SDK, or adapter. `src/application/` composes domain behavior and explicit in-memory stores. `src/adapters/` depends on validated domain authorization. `src/app/` remains separate and does not yet invoke the control flow.
 
 ## Deferred decisions
 
-OpenAI integration, authentication, durable persistence, deployment, real approval delivery, production tools, real customer data, payments, and email remain intentionally deferred.
+OpenAI integration, route handlers, UI workflow, authentication, durable persistence, deployment, real approval delivery, production tools, customer data, payments, and email remain intentionally deferred.

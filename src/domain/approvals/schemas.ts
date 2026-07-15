@@ -11,7 +11,9 @@ export const approvalRequestSchema = z
   .object({
     id: z.string().min(1),
     actionId: z.string().min(1),
+    actionFingerprint: z.string().length(64),
     policyId: z.string().min(1),
+    policyVersion: z.string().min(1),
     reason: z.string().min(1),
     status: approvalStatusSchema,
     createdAt: z.string().datetime(),
