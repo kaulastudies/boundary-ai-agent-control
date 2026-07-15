@@ -30,6 +30,11 @@ export const authoredPolicySchema = z
     version: z.string().min(1),
     name: z.string().min(1),
     authority: z.literal("HUMAN"),
+    sourcePolicyTextHash: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
+    confirmedBy: z.string().min(1).optional(),
     refundApprovalThresholdInr: z.number().int().nonnegative(),
     redactBeforeCloud: z.array(sensitiveDataKindSchema),
     routePrivately: z.array(sensitiveDataKindSchema),
@@ -66,6 +71,11 @@ export const compiledPolicySchema = z
     sourcePolicyId: z.string().min(1),
     sourcePolicyVersion: z.string().min(1),
     authority: z.literal("DETERMINISTIC_ENGINE"),
+    sourcePolicyTextHash: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .nullable(),
+    confirmedBy: z.string().min(1).nullable(),
     rules: z.array(normalizedRuleSchema),
     defaultDecision: z.literal("BLOCK"),
   })

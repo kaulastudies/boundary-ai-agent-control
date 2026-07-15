@@ -1,37 +1,42 @@
 # BOUNDARY
 
-BOUNDARY is an OpenAI Build Week project for making agent behavior explicit, enforceable, and auditable. Stage 2B completes a framework-independent deterministic golden path beneath the unchanged Next.js application shell.
+BOUNDARY is an OpenAI Build Week project for making agent behavior explicit, enforceable, and auditable. GPT-5.6 may interpret policy text and propose adversarial scenarios, but humans confirm policies and deterministic code remains the sole authority for compilation, approval, and simulated execution.
+
+## Authority boundary
+
+1. GPT-5.6 returns a strict, non-authoritative interpretation draft through the OpenAI Responses API.
+2. A human separately confirms the draft and supplies reviewer identity, policy identity, and version.
+3. Deterministic code creates the human-authored policy and compiles normalized rules.
+4. The deterministic engine evaluates actions, requires approvals, transforms sensitive actions, and blocks unmatched risk.
+5. Only side-effect-free simulated tools execute in this demo.
+
+Model output cannot authorize execution, approve a request, claim human authority, write audit events, or invoke a tool.
 
 ## Current capabilities
 
-- strict Zod schemas for policies, rules, actions, decisions, approvals, and audit events
-- deterministic `ALLOW`, `REDACT_AND_ALLOW`, `ROUTE_PRIVATELY`, `REQUIRE_APPROVAL`, and `BLOCK` decisions
-- explicit-block precedence and default-deny behavior
-- deterministic support-context classification
-- removal of classified phone and payment fields before cloud-bound simulation, followed by re-evaluation
-- private-zone transformation and re-evaluation with routing-loop prevention
-- exact-action, policy-version-bound approval continuation
-- idempotent evaluation, approval creation/resolution, continuation, and simulated execution
-- an append-only, queryable in-memory audit ledger with injected IDs and clocks
-- a complete synthetic ticket-to-follow-up workflow using side-effect-free tools only
+- strict Zod Structured Outputs using `openai.responses.parse(...)` and `zodTextFormat(...)`
+- lazy, server-only OpenAI environment and client construction
+- default model `gpt-5.6`
+- bounded timeout and caller abort support
+- safe normalized errors for configuration, timeout, abort, refusal, empty/malformed output, authentication, rate limits, transient failures, and unknown failures
+- explicit unconfirmed interpretation and human-confirmation contracts
+- reviewed adversarial suggestions converted into deterministic, non-executing fixtures
+- escaped-scenario reporting for gaps such as split refunds
+- the existing deterministic orchestration, approval, transformation, audit, and simulated-tool core
 
-No current module calls OpenAI or any network, database, payment system, or email provider. Model output cannot authorize execution; only deterministic allow decisions or a matching approved human request can pass the simulated execution guard.
+Tests use a fake Responses client and make zero live OpenAI requests.
 
 ## Stack
 
 - Next.js App Router and React
-- strict TypeScript
-- Tailwind CSS
-- Zod for runtime schemas
-- Vitest for deterministic tests
-- the official OpenAI JavaScript SDK, reserved for a future server-only adapter
+- strict TypeScript and Tailwind CSS
+- Zod and Vitest
+- official OpenAI JavaScript SDK and Responses API only
 - npm as the only package manager
-
-Future model-backed policy interpretation and adversarial scenario generation will use the OpenAI Responses API with `gpt-5.6`. No model request exists yet.
 
 ## Setup
 
-Use Node.js 20.9 or newer and the npm version declared in `package.json`.
+Use Node.js 20.9 or newer. The deterministic application and test suite do not require a key. To call the interpretation route manually, copy `.env.example` to an ignored `.env.local` and supply a real key locally without committing it.
 
 ```powershell
 npm install
@@ -39,35 +44,42 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Set `OPENAI_API_KEY` only in `.env.local` or an approved secret manager. Never commit populated environment files. The current application and policy engine do not require a key.
-
 ## Commands
 
 ```text
-npm run dev          # start the development server
-npm run format       # format repository files
-npm run format:check # verify formatting
-npm run lint         # run ESLint
-npm run typecheck    # run strict TypeScript checks
-npm test             # run deterministic tests once
-npm run test:watch   # run tests in watch mode
-npm run build        # create a production build
-npm start            # serve a production build
+npm run dev
+npm run format
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm start
 ```
+
+## Server route
+
+`POST /api/policies/interpret` accepts:
+
+```json
+{ "policyText": "Refunds above INR 5000 require approval." }
+```
+
+The route is dynamic, Node.js-only, request-size bounded, server-side, and non-caching. It returns an `UNCONFIRMED` interpretation draft. It never confirms or activates a policy, evaluates an action, creates an approval, or executes a tool. Errors contain safe codes/messages only.
 
 ## Repository map
 
-- `src/domain/` — policies, actions, decisions, approvals, and immutable audit-event contracts.
-- `src/application/policy-compiler/` — human-authored policy normalization.
-- `src/application/approvals/` — exact-action-bound in-memory approval lifecycle.
-- `src/application/audit/` — append-only ordered in-memory audit ledger.
-- `src/application/control-flow/` — classification, transformations, fingerprints, orchestration, and idempotency.
-- `src/adapters/tools/simulated/` — guarded, side-effect-free ticket, refund, and email simulations.
-- `src/fixtures/` — synthetic support-case policy data.
-- `src/app/` — unchanged Next.js App Router shell.
-- `tests/unit/` — deterministic domain and orchestration tests.
-- `docs/ARCHITECTURE.md` — module boundaries, state transitions, and dependency rules.
+- `src/adapters/openai/` — server environment/client, Responses Structured Outputs, provider ports, timeouts, and safe errors.
+- `src/domain/interpretation/` — non-authoritative interpretation schema.
+- `src/domain/adversarial/` — adversarial suggestion/review schemas.
+- `src/domain/confirmation/` — explicit human-confirmation input.
+- `src/application/confirmation/` — human-only conversion into compiled deterministic policy.
+- `src/application/adversarial/` — reviewed fixture normalization and enforcement reporting without execution.
+- `src/application/http/` — safe interpretation request handler.
+- `src/application/control-flow/` — deterministic orchestration and idempotency.
+- `src/app/api/policies/interpret/` — the sole Stage 3 route.
+- `tests/fakes/` — fake Responses client; no network access.
 
-## Provider and security boundary
+## Provider and secret restrictions
 
-BOUNDARY will use only OpenAI's supported APIs through the official SDK when model integration is explicitly added. Do not add LLM7, external model providers, custom proxies, localhost model gateways, or OpenAI-compatible endpoint shims. Future model calls belong in server-only adapters and must use the Responses API.
+Use only the official OpenAI SDK and Responses API. Do not add Chat Completions, LLM7, external providers, custom proxies, localhost gateways, or compatible endpoint shims. `OPENAI_API_KEY` is read only in a `server-only` module and is never returned, logged, serialized, or exposed to client components.

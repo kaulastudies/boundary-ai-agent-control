@@ -96,6 +96,8 @@ export function compilePolicy(untrustedPolicy: AuthoredPolicy): CompiledPolicy {
     sourcePolicyId: policy.id,
     sourcePolicyVersion: policy.version,
     authority: "DETERMINISTIC_ENGINE",
+    sourcePolicyTextHash: policy.sourcePolicyTextHash ?? null,
+    confirmedBy: policy.confirmedBy ?? null,
     rules,
     defaultDecision: "BLOCK",
   });

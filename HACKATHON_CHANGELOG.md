@@ -1,27 +1,28 @@
 # Hackathon Changelog
 
+## Stage 3 — Bounded GPT-5.6 interpretation and adversarial analysis
+
+- Added lazy `server-only` OpenAI environment and client construction with `gpt-5.6` default.
+- Added official Responses API Structured Outputs through `responses.parse` and `zodTextFormat`.
+- Added a fake Responses client so tests and builds make zero live API requests.
+- Added strict non-authoritative policy interpretation and adversarial scenario schemas.
+- Added timeout, abort, refusal, empty/malformed output, environment, authentication, rate-limit, transient, and unknown error handling.
+- Added an explicit human-confirmation boundary with reviewer, version, and source-hash provenance before deterministic compilation.
+- Added reviewed adversarial fixture conversion and explicit escaped-scenario reporting without execution.
+- Added only `POST /api/policies/interpret`, which returns an unconfirmed draft and cannot activate or execute anything.
+
 ## Stage 2B — Deterministic orchestration and golden path
 
-- Added a framework-independent control-flow service composing compilation, classification, evaluation, transformation, approval, continuation, simulation, and auditing.
-- Added an append-only in-memory audit ledger with immutable ordering, correlation queries, and injected IDs/time.
-- Added phone/payment removal with category-only auditing and mandatory transformed-action re-evaluation.
-- Added private execution-zone routing, transformed-action re-evaluation, and routing-loop prevention.
-- Bound approvals to the SHA-256 fingerprint of the exact normalized action and compiled policy version.
-- Added expiration, rejection, conflicting-resolution, substituted-action, duplicate-continuation, and duplicate-execution guards.
-- Added a synthetic support workflow from ticket read through approved outbound follow-up.
-- Added deterministic tests for the complete Stage 2B safety and audit timeline.
+- Added framework-independent orchestration, append-only audit, classification, redaction, private routing, exact approvals, idempotency, and synthetic golden-path execution.
 
 ## Stage 2A — Deterministic policy engine
 
-- Added strict Zod schemas for policies, rules, actions, decisions, approvals, and audit events.
-- Added five deterministic decisions and safety-first precedence with unmatched actions blocked by default.
-- Added the synthetic support policy, approval lifecycle, immutable audit events, and guarded simulated tools.
+- Added strict policy/action/decision schemas, safety precedence, default deny, approval lifecycle, audit events, and guarded simulated tools.
 
 ## Stage 1 — Repository foundation
 
-- Scaffolded the Next.js App Router application and strict TypeScript/npm toolchain.
-- Added Tailwind CSS, ESLint, Prettier, Zod, Vitest, the static shell, documentation, and security guidance.
+- Added the Next.js App Router shell, strict TypeScript/npm toolchain, formatting, linting, testing, documentation, and security guidance.
 
 ## Next
 
-Stage 3 will add a server-only, non-authoritative OpenAI interpretation and adversarial-generation boundary using the official SDK, Responses API, `gpt-5.6`, structured Zod validation, and deterministic regression capture. The deterministic engine will remain the sole execution authority.
+Stage 4 will add a local demo UI for interpretation review, explicit human confirmation, deterministic scenario playback, approval resolution, and audit-timeline visualization. It will call only the bounded interpretation route and deterministic local application services; no real tools or customer data will be introduced.

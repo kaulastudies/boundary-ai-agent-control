@@ -1,70 +1,70 @@
 # BOUNDARY Architecture
 
-## Stage 2B scope
+## Stage 3 scope
 
-BOUNDARY remains one Next.js deployable with a framework-independent control core. Stage 2B composes policy compilation, deterministic classification and evaluation, transformation, approval, simulated execution, and audit recording into a complete local workflow. It adds no UI behavior, route handler, OpenAI request, live network, database, payment, or email integration.
+Stage 3 adds bounded GPT-5.6 interpretation and adversarial analysis without changing deterministic execution authority. The model proposes; a human confirms; deterministic code compiles and enforces. The only new route returns an unconfirmed draft.
 
-## Implemented module map
+## OpenAI boundary
 
-| Concern                          | Path                                                    | Responsibility                                                                    |
-| -------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Policy and decision contracts    | `src/domain/policy/`                                    | Authored/compiled policy, normalized rule, and decision schemas                   |
-| Action and enforcement contracts | `src/domain/enforcement/`                               | Proposed action schema, execution zones, support context, and validated decisions |
-| Deterministic evaluator          | `src/domain/enforcement/evaluate-action.ts`             | Safety-first matching and default deny                                            |
-| Approval contract                | `src/domain/approvals/`                                 | Exact action fingerprint, policy version, state, and resolution metadata          |
-| Audit contract                   | `src/domain/audit/`                                     | Value-free immutable event schemas for every control transition                   |
-| Policy compiler                  | `src/application/policy-compiler/`                      | Human-authored policy normalization                                               |
-| Approval store                   | `src/application/approvals/`                            | Idempotent creation and immutable lifecycle snapshots                             |
-| Audit ledger                     | `src/application/audit/`                                | Append-only ordered events, correlation queries, injected IDs, and injected time  |
-| Transformations                  | `src/application/control-flow/transform-action.ts`      | Context classification, PII removal, private-zone routing, and loop prevention    |
-| Action fingerprint               | `src/application/control-flow/action-fingerprint.ts`    | SHA-256 binding for exact-action continuation                                     |
-| Orchestrator                     | `src/application/control-flow/boundary-control-flow.ts` | Golden-path composition and idempotency boundaries                                |
-| Simulated tools                  | `src/adapters/tools/simulated/`                         | Synthetic execution guarded by deterministic or human authorization               |
+Credential and client construction live in `src/adapters/openai/environment.ts` and `client.ts`, both marked `server-only`. Client creation is lazy, so importing schemas and running tests never requires a key. The official wrapper calls:
 
-## Orchestration flow
+```text
+openai.responses.parse(...)
+zodTextFormat(...)
+```
 
-1. Validate and deterministically classify the proposed action.
-2. Compile the human-authored policy once and audit its use once per correlation.
-3. Evaluate the action and record only decision metadata, never the action payload.
-4. For `REDACT_AND_ALLOW`, remove classified phone/payment fields, record category names, and re-evaluate.
-5. For `ROUTE_PRIVATELY`, set `executionZone` and processing route to private, record the transition, and re-evaluate.
-6. For `REQUIRE_APPROVAL`, hash and preserve the exact normalized action and compiled policy version, then create one pending request.
-7. Continue only if the matching request is approved and unexpired.
-8. Execute one side-effect-free tool at most once and append one execution event.
-9. Return prior immutable results for identical retries; reject conflicting resolution, action substitution, or routing loops.
+No Chat Completions, JSON-mode fallback, provider registry, proxy, gateway, external model, or model tool invocation exists.
 
-## Decision and transformation safety
+The testable `StructuredOutputClient` port accepts the schema, model, prompts, AbortSignal, and schema name. Production implements it with the official SDK; tests implement it with an in-memory fake. Tests and builds make zero live OpenAI requests.
 
-Decision precedence remains `BLOCK`, `REQUIRE_APPROVAL`, `ROUTE_PRIVATELY`, `REDACT_AND_ALLOW`, then `ALLOW`. Unmatched actions are blocked. Routing and redaction are transitions, not authorization shortcuts: each transformed action is parsed and evaluated again.
+## Interpretation sequence
 
-The action fingerprint covers the complete normalized action, including values, classifications, execution zone, and routing history. The fingerprint is retained only in the in-memory approval record; audit events contain IDs, policy metadata, decision metadata, category names, zones, and outcomes but never original support-context values.
+1. Validate server environment lazily and default the model to `gpt-5.6`.
+2. Hash the source policy text locally with SHA-256.
+3. Send policy text to `responses.parse` with a strict Zod text format and bounded signal.
+4. Reject refusal, empty output, malformed output, and source-hash mismatch.
+5. Return `{ status: "UNCONFIRMED", interpretation }`.
+6. Require a separate `confirmed: true` input with reviewer, policy identity, name, and version.
+7. Deterministic application code maps reviewed proposed rules into an authored policy stamped with source hash and reviewer.
+8. Run the authored policy through the existing deterministic compiler.
 
-## Idempotency boundaries
+The interpretation schema has no fields for execution authorization, approvals, human authority, audit execution claims, or tool invocation. Strict parsing rejects extra fields.
 
-- policy-compilation audit: once per correlation
-- evaluation: once per correlation and exact action fingerprint
-- approval creation: once per flow and exact action binding
-- approval resolution: identical retries return the prior result; conflicting retries fail
-- continuation: requires an exact fingerprint and policy-version match
-- execution: once per flow; repeated continuation returns the original result
+## Adversarial analysis sequence
 
-## Audit timeline
+GPT-5.6 may suggest split refunds, nested PII, disguised email, action mutation, approval replay, audit deletion, and unexpected routing. Suggestions remain inert until a human review input selects scenario IDs. Deterministic normalization then creates synthetic proposed-action fixtures and calls only `evaluateAction`.
 
-The append-only ledger supports ordered immutable events and correlation queries. It exposes no mutation or deletion method. Event types are:
+Reports classify each fixture as:
 
-- `POLICY_COMPILED`
-- `ACTION_CLASSIFIED`
-- `ACTION_EVALUATED`
-- `ACTION_REDACTED`
-- `ACTION_ROUTED_PRIVATELY`
-- `APPROVAL_CREATED`
-- `APPROVAL_RESOLVED`
-- `SIMULATED_EXECUTION`
+- `BLOCKED`
+- `APPROVAL_REQUIRED`
+- `SAFELY_TRANSFORMED`
+- `ESCAPED`
 
-## Dependency direction
+The review service does not import simulated tools, approval continuation, or execution orchestration. Escaped scenarios are explicit regression findings, not executed actions.
 
-`src/domain/` imports no Next.js, React, OpenAI SDK, or adapter. `src/application/` composes domain behavior and explicit in-memory stores. `src/adapters/` depends on validated domain authorization. `src/app/` remains separate and does not yet invoke the control flow.
+## Safe error boundary
+
+Application errors expose only a stable code, safe message, and retryable flag. Supported categories are configuration, timeout, abort, refusal, empty output, malformed output, authentication, rate limit, transient provider failure, and unknown provider failure. Provider messages, prompts, stack traces, credentials, and ticket values are discarded.
+
+## Route boundary
+
+`POST /api/policies/interpret`:
+
+- uses the Node.js runtime and is forced dynamic;
+- enforces declared and actual UTF-8 request limits;
+- accepts one strict `policyText` field;
+- returns no-store responses;
+- returns only an unconfirmed draft;
+- creates no policy, approval, audit execution event, or tool result; and
+- maps all failures to safe HTTP responses.
+
+No approval or execution route exists.
+
+## Existing deterministic authority
+
+Stages 2A/2B remain unchanged in authority: block precedence, default deny, re-evaluated redaction/private routing, exact-action approval binding, idempotent continuation, append-only audit, and side-effect-free simulated tools. OpenAI output cannot bypass these layers.
 
 ## Deferred decisions
 
-OpenAI integration, route handlers, UI workflow, authentication, durable persistence, deployment, real approval delivery, production tools, customer data, payments, and email remain intentionally deferred.
+UI workflow, authentication, durable storage, production approval delivery, live tools, real customer data, payments, and email remain deferred.
