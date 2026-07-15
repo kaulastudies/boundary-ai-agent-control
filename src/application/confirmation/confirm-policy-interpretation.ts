@@ -1,4 +1,5 @@
-import type {
+﻿import type {
+  AuthoredPolicy,
   CompiledPolicy,
   SensitiveDataKind,
 } from "@/domain/policy/schemas";
@@ -17,6 +18,7 @@ export interface ConfirmedPolicyResult {
   readonly status: "CONFIRMED";
   readonly reviewedBy: string;
   readonly sourcePolicyTextHash: string;
+  readonly authoredPolicy: AuthoredPolicy;
   readonly compiledPolicy: CompiledPolicy;
 }
 
@@ -77,6 +79,7 @@ export function confirmPolicyInterpretation(
     status: "CONFIRMED",
     reviewedBy: confirmation.reviewerId,
     sourcePolicyTextHash: draft.interpretation.sourcePolicyTextHash,
+    authoredPolicy,
     compiledPolicy: compilePolicy(authoredPolicy),
   });
 }

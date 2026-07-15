@@ -34,3 +34,9 @@ Never add Chat Completions, LLM7, external providers, custom proxies, localhost 
 ## Handoff checklist
 
 Report changed files, commands, test count, route behavior, security boundaries, live API call count, verification results, and the exact next stage.
+
+## Stage 4 collaboration record
+
+Codex composed the existing Stage 2/3 services behind a server-owned demo workspace. No alternate enforcement logic was placed in the browser. The committed demo fixture is clearly marked synthetic; Live GPT-5.6 remains optional and server-only. The UI exposes approval decisions but continuation always uses the preserved server-side action and policy version.
+
+No database, external provider, live payment, live email, commit, push, or deployment was performed. Test execution made zero live OpenAI requests.

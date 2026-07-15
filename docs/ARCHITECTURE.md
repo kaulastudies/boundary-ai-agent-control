@@ -68,3 +68,11 @@ Stages 2A/2B remain unchanged in authority: block precedence, default deny, re-e
 ## Deferred decisions
 
 UI workflow, authentication, durable storage, production approval delivery, live tools, real customer data, payments, and email remain deferred.
+
+## Stage 4 — Judge workspace
+
+Stage 4 adds a server-authoritative in-memory demo session in src/application/demo/, exposed through POST /api/demo/workspace. The client component renders safe snapshots and sends commands; it does not compile policies, approve actions, or invoke tools.
+
+Dependency direction: browser workspace → server demo route → demo application session → confirmation/compiler/control flow/adversarial review → domain schemas/deterministic evaluator → in-memory approvals/append-only audit → side-effect-free simulated tools.
+
+The committed demo interpretation uses the same strict unconfirmed schema as the live adapter. Live interpretation still crosses only POST /api/policies/interpret. Both paths require the same independent human confirmation before deterministic compilation. In-memory sessions are intentionally ephemeral and suitable only for the local hackathon demo.

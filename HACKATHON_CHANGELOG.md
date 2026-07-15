@@ -26,3 +26,12 @@
 ## Next
 
 Stage 4 will add a local demo UI for interpretation review, explicit human confirmation, deterministic scenario playback, approval resolution, and audit-timeline visualization. It will call only the bounded interpretation route and deterministic local application services; no real tools or customer data will be introduced.
+
+## Stage 4 — Judge-ready workspace
+
+- Replaced the static foundation shell with a responsive end-to-end control workspace.
+- Added no-key demo interpretation and explicit Live GPT-5.6 mode without silent fallback.
+- Added a server-owned, ephemeral demo session and strict command route.
+- Added human confirmation, compiled-rule inspection, six synthetic action presets, approval resolution/continuation, adversarial fixtures, and append-only audit visualization.
+- Added Stage 4 deterministic workspace coverage; the suite now contains 74 tests.
+- Added judge demo and testing guides.

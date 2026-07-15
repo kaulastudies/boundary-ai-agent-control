@@ -83,3 +83,20 @@ The route is dynamic, Node.js-only, request-size bounded, server-side, and non-c
 ## Provider and secret restrictions
 
 Use only the official OpenAI SDK and Responses API. Do not add Chat Completions, LLM7, external providers, custom proxies, localhost gateways, or compatible endpoint shims. `OPENAI_API_KEY` is read only in a `server-only` module and is never returned, logged, serialized, or exposed to client components.
+
+## Stage 4 — Judge-ready demo workspace
+
+The root page is now a complete BOUNDARY demonstration. It supports a committed synthetic interpretation fixture with no API key, plus an explicit Live GPT-5.6 mode that calls the existing server-only Responses API route. Live failures are shown as failures and never fall back silently.
+
+The browser is a request and presentation surface only. POST /api/demo/workspace owns the in-memory demo session and composes human confirmation, deterministic compilation, action evaluation, redaction/private routing, approval continuation, simulated tools, adversarial fixture review, and the append-only audit ledger.
+
+Quick demo:
+
+1. Keep Demo fixture selected and choose Interpret policy.
+2. Review the UNCONFIRMED proposal.
+3. Enter a reviewer, check the confirmation statement, and compile.
+4. Try the redaction/private-routing presets and the blocked audit deletion.
+5. Submit a ₹7,500 refund, approve it, then continue the exact action.
+6. Run adversarial analysis and inspect the ordered audit timeline.
+
+Only synthetic data and simulated tools are used. Tests make zero live OpenAI requests.

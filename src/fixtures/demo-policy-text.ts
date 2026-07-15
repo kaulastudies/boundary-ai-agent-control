@@ -1,0 +1,1 @@
+﻿export const DEFAULT_DEMO_POLICY = `Support agents may read synthetic tickets. Before cloud processing, redact phone and payment information. Route full support transcripts privately. Refunds up to ₹5,000 may proceed; larger refunds require human approval. External email requires human approval. Never delete audit history.`;
