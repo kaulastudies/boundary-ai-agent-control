@@ -12,10 +12,19 @@ No NEXT_PUBLIC variable is used for Redis or OpenAI credentials.
 
 ## Required production session variables
 
+BOUNDARY accepts either of these server-only credential pairs:
+
+Preferred Upstash names:
+
 - UPSTASH_REDIS_REST_URL
 - UPSTASH_REDIS_REST_TOKEN
 
-These are the variable names required by the installed official Upstash SDK. Values come from the Upstash database details or Vercel integration and must never be committed or printed.
+Vercel legacy KV aliases:
+
+- KV_REST_API_URL
+- KV_REST_API_TOKEN
+
+The Upstash names take precedence when both pairs are present. The application never copies, prints, or exposes the credential values. Existing Vercel KV integrations therefore work without duplicating secrets.
 
 ## Optional live interpretation variables
 

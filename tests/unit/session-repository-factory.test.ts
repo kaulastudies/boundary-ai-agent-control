@@ -13,6 +13,21 @@ describe("production session repository selection", () => {
     );
   });
 
+  it("accepts Vercel KV aliases for production Redis", async () => {
+    const { createDemoSessionRepository } =
+      await import("@/adapters/upstash/create-demo-session-repository");
+    const { UpstashDemoSessionRepository } =
+      await import("@/adapters/upstash/upstash-demo-session-repository");
+
+    const repository = createDemoSessionRepository({
+      NODE_ENV: "production",
+      KV_REST_API_URL: "https://synthetic-redis.example",
+      KV_REST_API_TOKEN: "synthetic-token",
+    });
+
+    expect(repository).toBeInstanceOf(UpstashDemoSessionRepository);
+  });
+
   it("uses bounded memory only outside production", async () => {
     const { createDemoSessionRepository } =
       await import("@/adapters/upstash/create-demo-session-repository");

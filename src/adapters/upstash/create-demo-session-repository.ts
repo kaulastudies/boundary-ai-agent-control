@@ -24,8 +24,12 @@ export function createDemoSessionRepository(
   environment: NodeJS.ProcessEnv = process.env,
 ): DemoSessionRepository {
   const production = environment.NODE_ENV === "production";
-  const url = environment.UPSTASH_REDIS_REST_URL;
-  const token = environment.UPSTASH_REDIS_REST_TOKEN;
+  // Prefer the current Upstash SDK variable names. Vercel's legacy KV
+  // integration exposes the same REST credentials under KV_REST_API_*.
+  // Supporting both avoids copying, printing, or re-storing secrets.
+  const url = environment.UPSTASH_REDIS_REST_URL ?? environment.KV_REST_API_URL;
+  const token =
+    environment.UPSTASH_REDIS_REST_TOKEN ?? environment.KV_REST_API_TOKEN;
 
   if (url && token) {
     return new UpstashDemoSessionRepository(
