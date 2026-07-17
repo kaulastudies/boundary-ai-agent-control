@@ -1,48 +1,171 @@
-﻿# BOUNDARY
+<div align="center">
 
-BOUNDARY is an OpenAI Build Week project for making agent behavior explicit, enforceable, and auditable. GPT-5.6 may interpret policy text and propose adversarial scenarios, but humans confirm policies and deterministic code remains the sole authority for compilation, approval, and simulated execution.
+# BOUNDARY
 
-## Authority boundary
+### AI that asks before it acts.
 
-1. GPT-5.6 returns a strict, non-authoritative interpretation draft through the OpenAI Responses API.
-2. A human separately confirms the draft and supplies reviewer identity, policy identity, and version.
-3. Deterministic code creates the human-authored policy and compiles normalized rules.
-4. The deterministic engine evaluates actions, requires approvals, transforms sensitive actions, and blocks unmatched risk.
-5. Only side-effect-free simulated tools execute in this demo.
+A deterministic policy and approval layer for AI agents. BOUNDARY converts plain-English company rules into enforceable decisions—**allow, redact, route privately, require approval, or block**—with a human-controlled confirmation step and a complete audit trail.
 
-Model output cannot authorize execution, approve a request, claim human authority, write audit events, or invoke a tool.
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?logo=vercel&logoColor=white)](https://boundary-ai-agent-control.vercel.app)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5.6-412991?logo=openai&logoColor=white)](https://openai.com/)
+[![Codex](https://img.shields.io/badge/Built_with-Codex-111827)](./CODEX_COLLABORATION.md)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.10-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tests](https://img.shields.io/badge/tests-89_passing-2EA44F)](#verification)
+[![OpenAI Build Week](https://img.shields.io/badge/OpenAI_Build_Week-2026-FF6B35)](#hackathon-submission)
 
-## Current capabilities
+[Live Demo](https://boundary-ai-agent-control.vercel.app) ·
+[Judge Testing Guide](./docs/JUDGE_TESTING.md) ·
+[Architecture](./docs/ARCHITECTURE.md) ·
+[Threat Model](./docs/THREAT_MODEL.md) ·
+[Deployment](./docs/DEPLOYMENT.md)
 
-- strict Zod Structured Outputs using `openai.responses.parse(...)` and `zodTextFormat(...)`
-- lazy, server-only OpenAI environment and client construction
-- default model `gpt-5.6`
-- bounded timeout and caller abort support
-- safe normalized errors for configuration, timeout, abort, refusal, empty/malformed output, authentication, rate limits, transient failures, and unknown failures
-- explicit unconfirmed interpretation and human-confirmation contracts
-- reviewed adversarial suggestions converted into deterministic, non-executing fixtures
-- escaped-scenario reporting for gaps such as split refunds
-- the existing deterministic orchestration, approval, transformation, audit, and simulated-tool core
+</div>
 
-Tests use a fake Responses client and make zero live OpenAI requests.
+---
+
+## Why BOUNDARY
+
+AI agents increasingly propose refunds, send messages, process records, call tools, and update systems. Prompt instructions alone are not a reliable authorization boundary.
+
+BOUNDARY places a deterministic control layer between an agent's proposed action and its simulated execution:
+
+1. GPT-5.6 produces a strict, **non-authoritative** interpretation proposal.
+2. A human reviews and confirms the policy.
+3. Deterministic code compiles the confirmed policy.
+4. The enforcement engine evaluates every proposed action.
+5. Only simulated tools can execute in this hackathon demo.
+6. Safe audit events record the decision path.
+
+> **Core principle:** model output may interpret and suggest; it cannot authorize, approve, write authoritative audit events, or invoke tools.
+
+## Decisions
+
+| Decision             | Meaning                                        | Example                                 |
+| -------------------- | ---------------------------------------------- | --------------------------------------- |
+| **ALLOW**            | Action is permitted by the confirmed policy    | Small refund within the automatic limit |
+| **REDACT_AND_ALLOW** | Sensitive fields are removed before processing | Cloud action containing synthetic PII   |
+| **ROUTE_PRIVATELY**  | Action must use an approved private path       | Sensitive transcript handling           |
+| **REQUIRE_APPROVAL** | Exact action pauses for a human decision       | ₹7,500 refund or external email         |
+| **BLOCK**            | Action is prohibited                           | Attempt to delete the audit history     |
+
+## Judge-ready workflow
+
+1. Open the [live demo](https://boundary-ai-agent-control.vercel.app).
+2. Keep **Demo fixture** selected.
+3. Interpret the supplied company policy.
+4. Review the `UNCONFIRMED` structured proposal.
+5. Enter a reviewer identity and confirm the policy.
+6. Test safe refund, large refund, PII cloud action, private transcript, external email, and blocked deletion.
+7. Approve or reject the ₹7,500 refund.
+8. Continue the exact approved action and inspect the audit timeline.
+9. Run **Try to Break My Policy**.
+10. Reset the session and repeat.
+
+No account or credentials are required. All records, refunds, emails, approvals, and tools are synthetic or simulated.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    P[Plain-English policy] --> G[GPT-5.6 interpretation]
+    G --> U[UNCONFIRMED proposal]
+    U --> H[Human confirmation]
+    H --> C[Deterministic compiler]
+
+    A[Proposed agent action] --> E[Deterministic enforcement engine]
+    C --> E
+
+    E --> D1[ALLOW]
+    E --> D2[REDACT AND ALLOW]
+    E --> D3[ROUTE PRIVATELY]
+    E --> D4[REQUIRE APPROVAL]
+    E --> D5[BLOCK]
+
+    D4 --> R[Human resolution]
+    D1 --> T[Simulated tools]
+    D2 --> T
+    D3 --> T
+    R --> T
+
+    E --> L[Safe audit ledger]
+    R --> L
+    T --> L
+```
+
+### Authority boundaries
+
+- **GPT-5.6:** bounded policy interpretation and adversarial suggestion generation.
+- **Human reviewer:** confirms a policy and resolves approval requests.
+- **Deterministic code:** policy compilation, enforcement, action transformation, replay protection, approval binding, and audit creation.
+- **Simulated tools:** side-effect-free demonstration only.
+
+## Features
+
+- Strict Zod schemas and structured OpenAI Responses API output
+- Human confirmation before a model-generated interpretation can become active
+- Five deterministic enforcement outcomes
+- Approval records bound to the exact action and policy version
+- Redaction and private-routing transformations
+- Idempotent continuation and replay protection
+- Adversarial policy testing with bounded fixtures
+- Redis-backed production demo sessions with TTL and safe reset
+- Request size limits, bounded throttling, safe errors, and security headers
+- No client-side credentials
+- No Chat Completions, custom provider proxy, or localhost model gateway
 
 ## Stack
 
-- Next.js App Router and React
-- strict TypeScript and Tailwind CSS
-- Zod and Vitest
-- official OpenAI JavaScript SDK and Responses API only
-- npm as the only package manager
+| Layer               | Technology                                             |
+| ------------------- | ------------------------------------------------------ |
+| Application         | Next.js App Router, React                              |
+| Language            | TypeScript in strict mode                              |
+| UI                  | Tailwind CSS                                           |
+| Validation          | Zod                                                    |
+| AI                  | Official OpenAI JavaScript SDK, Responses API, GPT-5.6 |
+| Session persistence | Upstash Redis / Vercel KV REST compatibility           |
+| Testing             | Vitest                                                 |
+| Deployment          | Vercel                                                 |
+| Package manager     | npm                                                    |
 
-## Setup
+## Local setup
 
-Use Node.js 20.9 or newer. The deterministic application and test suite do not require a key. To call the interpretation route manually, copy `.env.example` to an ignored `.env.local` and supply a real key locally without committing it.
+### Requirements
+
+- Node.js **22.x**
+- npm
+- An OpenAI API key only for optional Live GPT-5.6 mode
 
 ```powershell
-npm install
+git clone git@github.com:kaulastudies/boundary-ai-agent-control.git
+cd boundary-ai-agent-control
+npm ci
 Copy-Item .env.example .env.local
 npm run dev
 ```
+
+Open `http://localhost:3000`.
+
+Demo fixture mode works without environment variables. Keep real values only in ignored local files or server-side deployment settings.
+
+### Environment variables
+
+```text
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5.6
+
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
+Production also accepts the existing Vercel KV aliases:
+
+```text
+KV_REST_API_URL=
+KV_REST_API_TOKEN=
+```
+
+The Upstash names take precedence when both pairs exist. No credential is exposed to client code.
 
 ## Commands
 
@@ -57,73 +180,116 @@ npm run build
 npm start
 ```
 
-## Server route
+## Verification
 
-`POST /api/policies/interpret` accepts:
+Current verified release:
 
-```json
-{ "policyText": "Refunds above INR 5000 require approval." }
+- **89 automated tests passing**
+- ESLint passing
+- TypeScript typecheck passing
+- Next.js production build passing
+- Live health endpoint passing
+- Redis-backed production session creation passing
+- Production session reset passing
+
+Tests use fakes for OpenAI and make zero live provider calls.
+
+## Production routes
+
+| Route                     | Method | Purpose                               |
+| ------------------------- | ------ | ------------------------------------- |
+| `/`                       | GET    | Judge-ready BOUNDARY workspace        |
+| `/api/health`             | GET    | Minimal `{ "status": "ok" }` response |
+| `/api/policies/interpret` | GET    | Safe Live GPT-5.6 availability check  |
+| `/api/policies/interpret` | POST   | Bounded server-only interpretation    |
+| `/api/demo/workspace`     | POST   | Deterministic session workflow        |
+
+## Security and privacy
+
+- Default deny for unmatched risk
+- Model output is non-authoritative
+- Human confirmation is explicit
+- Approval binds to an exact action and policy version
+- Sensitive values are excluded from safe errors and audit snapshots
+- Credentials remain server-side
+- Production never falls back silently from Redis to process memory
+- Live GPT-5.6 never silently falls back to fixture mode
+- All tools are simulated; no payment, email, CRM, or customer system is connected
+
+See the concise [threat model](./docs/THREAT_MODEL.md) for remaining demo limitations.
+
+## How Codex and GPT-5.6 were used
+
+### Codex
+
+Codex was the primary engineering environment for:
+
+- repository foundation and architecture
+- deterministic policy engine
+- human confirmation and approvals
+- simulated tools and audit ledger
+- official Responses API integration
+- adversarial testing
+- judge-facing UI
+- deployment hardening
+- tests, documentation, and production verification
+
+The implementation history and collaboration notes are recorded in [CODEX_COLLABORATION.md](./CODEX_COLLABORATION.md) and [HACKATHON_CHANGELOG.md](./HACKATHON_CHANGELOG.md).
+
+### GPT-5.6
+
+GPT-5.6 is used for two bounded language tasks:
+
+1. Convert plain-English policy into a strict, non-authoritative structured proposal.
+2. Suggest adversarial scenarios for human review and deterministic testing.
+
+GPT-5.6 cannot activate a policy, approve an action, execute a tool, or become the final enforcement authority.
+
+## Project structure
+
+```text
+src/
+├─ adapters/
+│  ├─ openai/        Official SDK and Responses API boundary
+│  ├─ tools/         Side-effect-free simulated tools
+│  └─ upstash/       Production session repository
+├─ app/api/          Health, interpretation, and workspace routes
+├─ application/      Confirmation, approvals, control flow, audit, sessions
+├─ domain/           Schemas and deterministic enforcement
+├─ fixtures/         Synthetic demo policies, actions, and adversarial cases
+└─ components/       Judge-ready workspace UI
+
+tests/
+├─ fakes/            Provider and repository fakes
+└─ unit/             Deterministic unit and route tests
 ```
 
-The route is dynamic, Node.js-only, request-size bounded, server-side, and non-caching. It returns an `UNCONFIRMED` interpretation draft. It never confirms or activates a policy, evaluates an action, creates an approval, or executes a tool. Errors contain safe codes/messages only.
+## Team and tracked work
 
-## Repository map
+- **Rama Chandra M** — project lead, architecture, deterministic engine, OpenAI integration, deployment, and submission.
+- **Naboth Daniel** — QA and documentation contributor; post-submission work is tracked transparently below.
 
-- `src/adapters/openai/` â€” server environment/client, Responses Structured Outputs, provider ports, timeouts, and safe errors.
-- `src/domain/interpretation/` â€” non-authoritative interpretation schema.
-- `src/domain/adversarial/` â€” adversarial suggestion/review schemas.
-- `src/domain/confirmation/` â€” explicit human-confirmation input.
-- `src/application/confirmation/` â€” human-only conversion into compiled deterministic policy.
-- `src/application/adversarial/` â€” reviewed fixture normalization and enforcement reporting without execution.
-- `src/application/http/` â€” safe interpretation request handler.
-- `src/application/control-flow/` â€” deterministic orchestration and idempotency.
-- `src/app/api/policies/interpret/` â€” the sole Stage 3 route.
-- `tests/fakes/` â€” fake Responses client; no network access.
+| Task                                                                                                             | Status |
+| ---------------------------------------------------------------------------------------------------------------- | ------ |
+| [Cross-browser and mobile judge QA](https://github.com/kaulastudies/boundary-ai-agent-control/issues/1)          | Open   |
+| [Final screenshots and Devpost verification](https://github.com/kaulastudies/boundary-ai-agent-control/issues/2) | Open   |
+| [README and judge-instructions review](https://github.com/kaulastudies/boundary-ai-agent-control/issues/3)       | Open   |
+| [Final live regression evidence](https://github.com/kaulastudies/boundary-ai-agent-control/issues/4)             | Open   |
 
-## Provider and secret restrictions
+Milestone: **Post-submission polish — Judge readiness**
 
-Use only the official OpenAI SDK and Responses API. Do not add Chat Completions, LLM7, external providers, custom proxies, localhost gateways, or compatible endpoint shims. `OPENAI_API_KEY` is read only in a `server-only` module and is never returned, logged, serialized, or exposed to client components.
+## Hackathon submission
 
-## Stage 4 â€” Judge-ready demo workspace
+BOUNDARY was built for **OpenAI Build Week 2026** in the **Work & Productivity** category.
 
-The root page is now a complete BOUNDARY demonstration. It supports a committed synthetic interpretation fixture with no API key, plus an explicit Live GPT-5.6 mode that calls the existing server-only Responses API route. Live failures are shown as failures and never fall back silently.
+- Live demo: https://boundary-ai-agent-control.vercel.app
+- Repository: https://github.com/kaulastudies/boundary-ai-agent-control
+- Feedback ID: `019f644d-5b46-71f1-93f9-20c4e49f8ad3`
 
-The browser is a request and presentation surface only. POST /api/demo/workspace owns the server-side demo session and composes human confirmation, deterministic compilation, action evaluation, redaction/private routing, approval continuation, simulated tools, adversarial fixture review, and the append-only audit ledger.
+---
 
-Quick demo:
+<div align="center">
 
-1. Keep Demo fixture selected and choose Interpret policy.
-2. Review the UNCONFIRMED proposal.
-3. Enter a reviewer, check the confirmation statement, and compile.
-4. Try the redaction/private-routing presets and the blocked audit deletion.
-5. Submit a â‚¹7,500 refund, approve it, then continue the exact action.
-6. Run adversarial analysis and inspect the ordered audit timeline.
+**BOUNDARY: AI that asks before it acts.**
 
-Only synthetic data and simulated tools are used. Tests make zero live OpenAI requests.
-
-## Stage 5 â€” Deployment and submission hardening
-
-BOUNDARY is deployment-ready as a single Next.js Node application. The public demo uses the session-repository boundary: bounded memory for local development and deterministic tests, and Upstash Redis with TTL for production serverless deployment. It preserves idempotent initialization, safe reset, replay protection, bounded request throttling, safe response headers, and a minimal health route.
-
-Demo fixture mode remains the default and requires no environment variables. Live GPT-5.6 is disabled in the UI when the server has no OPENAI_API_KEY. Live failures never fall back to the fixture.
-
-Production endpoints:
-
-- GET /api/health returns only {"status":"ok"}.
-- GET /api/policies/interpret returns only live availability.
-- POST /api/policies/interpret performs bounded server-only interpretation.
-- POST /api/demo/workspace operates the ephemeral deterministic demo session.
-
-See docs/DEPLOYMENT.md, docs/THREAT_MODEL.md, and docs/SUBMISSION_CHECKLIST.md before submission.
-
-## Vercel Hobby deployment
-
-Production demo sessions require the official Upstash Redis SDK and its server-only REST variables. Missing or unavailable Redis returns a safe temporary-unavailable response. Demo fixture interpretation still requires no OpenAI key.
-
-## Production deployment
-
-BOUNDARY is deployed at [https://boundary-ai-agent-control.vercel.app](https://boundary-ai-agent-control.vercel.app) on Vercel Hobby, connected to the GitHub main branch.
-
-Demo fixture mode is the default and requires no OpenAI API key. Live GPT-5.6 mode is optional and remains server-only. The production health endpoint is [https://boundary-ai-agent-control.vercel.app/api/health](https://boundary-ai-agent-control.vercel.app/api/health).
-
-All actions, refunds, emails, approvals, and tools are synthetic or simulated. Demo sessions are ephemeral and may reset after inactivity or deployment replacement.
+</div>
