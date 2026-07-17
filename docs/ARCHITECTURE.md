@@ -1,4 +1,4 @@
-# BOUNDARY Architecture
+﻿# BOUNDARY Architecture
 
 ## Stage 3 scope
 
@@ -69,10 +69,22 @@ Stages 2A/2B remain unchanged in authority: block precedence, default deny, re-e
 
 UI workflow, authentication, durable storage, production approval delivery, live tools, real customer data, payments, and email remain deferred.
 
-## Stage 4 — Judge workspace
+## Stage 4 â€” Judge workspace
 
-Stage 4 adds a server-authoritative in-memory demo session in src/application/demo/, exposed through POST /api/demo/workspace. The client component renders safe snapshots and sends commands; it does not compile policies, approve actions, or invoke tools.
+Stage 4 adds a server-authoritative demo session in src/application/demo/, exposed through POST /api/demo/workspace. The client component renders safe snapshots and sends commands; it does not compile policies, approve actions, or invoke tools.
 
-Dependency direction: browser workspace → server demo route → demo application session → confirmation/compiler/control flow/adversarial review → domain schemas/deterministic evaluator → in-memory approvals/append-only audit → side-effect-free simulated tools.
+Dependency direction: browser workspace â†’ server demo route â†’ demo application session â†’ confirmation/compiler/control flow/adversarial review â†’ domain schemas/deterministic evaluator â†’ in-memory approvals/append-only audit â†’ side-effect-free simulated tools.
 
-The committed demo interpretation uses the same strict unconfirmed schema as the live adapter. Live interpretation still crosses only POST /api/policies/interpret. Both paths require the same independent human confirmation before deterministic compilation. In-memory sessions are intentionally ephemeral and suitable only for the local hackathon demo.
+The committed demo interpretation uses the same strict unconfirmed schema as the live adapter. Live interpretation still crosses only POST /api/policies/interpret. Both paths require the same independent human confirmation before deterministic compilation. The session service is independent of its persistence adapter.
+
+## Stage 5 deployment boundary
+
+The DemoSessionRepository interface separates application orchestration from storage. Production uses the server-only Upstash Redis adapter with secure random IDs and a 30-minute TTL. Local development and tests use the bounded in-memory repository. Stable browser tokens make INIT idempotent, and RESET replaces stored state. Production never falls back to memory when Redis is missing or unavailable.
+
+Fixed-window in-memory limiters bound demo workspace and live interpretation requests. They store only counters and reset times keyed by the forwarded request address; policy text and action payloads are never used as limiter keys. Next.js applies conservative response headers without a Content Security Policy. GET /api/health returns no dependency, configuration, credential, or memory details.
+
+## Vercel Hobby and Upstash session persistence
+
+The demo route now depends on DemoSessionRepository rather than Redis or process state. Persisted state is a strict versioned schema containing the compiled policy, sanitized action snapshots, approval metadata, safe audit events, and a bounded synthetic operation history used to reconstruct idempotency and replay protection. Unconfirmed interpretation drafts remain in the browser response and are supplied only to the confirmation request; they are not persisted.
+
+The Upstash adapter hashes browser initialization tokens, uses cryptographically random session IDs, applies Redis TTL to session and idempotency keys, and refreshes expiry on access. Adapter failures become one safe temporary-unavailable response. The local adapter remains bounded and deterministic.

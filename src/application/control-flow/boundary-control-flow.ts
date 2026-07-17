@@ -1,10 +1,11 @@
-import type { ApprovalRequest } from "@/domain/approvals/schemas";
+﻿import type { ApprovalRequest } from "@/domain/approvals/schemas";
 import type {
   EnforcementDecision,
   ProposedAgentAction,
 } from "@/domain/enforcement/schemas";
 import { proposedAgentActionSchema } from "@/domain/enforcement/schemas";
 import type { AuthoredPolicy, CompiledPolicy } from "@/domain/policy/schemas";
+import { compiledPolicySchema } from "@/domain/policy/schemas";
 import { compilePolicy } from "@/application/policy-compiler/compile-policy";
 import { InMemoryApprovalStore } from "@/application/approvals/in-memory-approval-store";
 import { InMemoryAuditLedger } from "@/application/audit/in-memory-audit-ledger";
@@ -70,10 +71,13 @@ export class BoundaryControlFlow {
   readonly #executions = new Map<string, ControlFlowResult>();
 
   constructor(
-    authoredPolicy: AuthoredPolicy,
+    policyInput: AuthoredPolicy | CompiledPolicy,
     private readonly dependencies: ControlFlowDependencies,
   ) {
-    this.policy = compilePolicy(authoredPolicy);
+    this.policy =
+      policyInput.authority === "DETERMINISTIC_ENGINE"
+        ? compiledPolicySchema.parse(policyInput)
+        : compilePolicy(policyInput);
     this.approvals = new InMemoryApprovalStore({
       now: dependencies.now,
       nextId: () => dependencies.nextId("approval"),

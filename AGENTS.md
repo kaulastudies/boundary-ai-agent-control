@@ -52,7 +52,7 @@ Review control changes for secure defaults, explicit failure behavior, auditabil
 ## Secrets and Sensitive Data
 
 - Never commit API keys, tokens, credentials, session data, private prompts, customer data, or populated environment files.
-- Keep secrets in environment variables or an approved secret manager. `.env.example` must contain exactly `OPENAI_API_KEY=` and `OPENAI_MODEL=gpt-5.6`.
+- Keep secrets in environment variables or an approved secret manager. `.env.example` may contain only the approved empty/default entries for `OPENAI_API_KEY`, `OPENAI_MODEL`, `UPSTASH_REDIS_REST_URL`, and `UPSTASH_REDIS_REST_TOKEN`.
 - Keep `.env`, `.env.local`, and other populated environment files ignored.
 - Redact sensitive values from logs, fixtures, snapshots, examples, issues, and commit messages.
 - Never expose OpenAI credentials to browser or other client-side code; model calls must cross a trusted server-side boundary.
@@ -61,3 +61,7 @@ Review control changes for secure defaults, explicit failure behavior, auditabil
 ## Commit and Pull Request Guidance
 
 There is no established project history from which to infer a commit convention. Until maintainers select one, use short imperative subjects describing the concrete change, and avoid claiming compatibility or test coverage that was not verified. Pull requests should state scope, decisions introduced, commands run, and security or policy-boundary impact. Never commit or push unless explicitly requested.
+
+## Stage 5 runtime guidance
+
+Production deployment uses Vercel server functions and the server-only Upstash Redis session repository. Local development and deterministic tests use the bounded in-memory repository. Sessions expire by TTL and reset replaces stored state. Do not add authentication, broader persistence, or real integrations during the hackathon submission stage.

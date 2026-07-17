@@ -1,4 +1,4 @@
-# BOUNDARY
+﻿# BOUNDARY
 
 BOUNDARY is an OpenAI Build Week project for making agent behavior explicit, enforceable, and auditable. GPT-5.6 may interpret policy text and propose adversarial scenarios, but humans confirm policies and deterministic code remains the sole authority for compilation, approval, and simulated execution.
 
@@ -69,26 +69,26 @@ The route is dynamic, Node.js-only, request-size bounded, server-side, and non-c
 
 ## Repository map
 
-- `src/adapters/openai/` — server environment/client, Responses Structured Outputs, provider ports, timeouts, and safe errors.
-- `src/domain/interpretation/` — non-authoritative interpretation schema.
-- `src/domain/adversarial/` — adversarial suggestion/review schemas.
-- `src/domain/confirmation/` — explicit human-confirmation input.
-- `src/application/confirmation/` — human-only conversion into compiled deterministic policy.
-- `src/application/adversarial/` — reviewed fixture normalization and enforcement reporting without execution.
-- `src/application/http/` — safe interpretation request handler.
-- `src/application/control-flow/` — deterministic orchestration and idempotency.
-- `src/app/api/policies/interpret/` — the sole Stage 3 route.
-- `tests/fakes/` — fake Responses client; no network access.
+- `src/adapters/openai/` â€” server environment/client, Responses Structured Outputs, provider ports, timeouts, and safe errors.
+- `src/domain/interpretation/` â€” non-authoritative interpretation schema.
+- `src/domain/adversarial/` â€” adversarial suggestion/review schemas.
+- `src/domain/confirmation/` â€” explicit human-confirmation input.
+- `src/application/confirmation/` â€” human-only conversion into compiled deterministic policy.
+- `src/application/adversarial/` â€” reviewed fixture normalization and enforcement reporting without execution.
+- `src/application/http/` â€” safe interpretation request handler.
+- `src/application/control-flow/` â€” deterministic orchestration and idempotency.
+- `src/app/api/policies/interpret/` â€” the sole Stage 3 route.
+- `tests/fakes/` â€” fake Responses client; no network access.
 
 ## Provider and secret restrictions
 
 Use only the official OpenAI SDK and Responses API. Do not add Chat Completions, LLM7, external providers, custom proxies, localhost gateways, or compatible endpoint shims. `OPENAI_API_KEY` is read only in a `server-only` module and is never returned, logged, serialized, or exposed to client components.
 
-## Stage 4 — Judge-ready demo workspace
+## Stage 4 â€” Judge-ready demo workspace
 
 The root page is now a complete BOUNDARY demonstration. It supports a committed synthetic interpretation fixture with no API key, plus an explicit Live GPT-5.6 mode that calls the existing server-only Responses API route. Live failures are shown as failures and never fall back silently.
 
-The browser is a request and presentation surface only. POST /api/demo/workspace owns the in-memory demo session and composes human confirmation, deterministic compilation, action evaluation, redaction/private routing, approval continuation, simulated tools, adversarial fixture review, and the append-only audit ledger.
+The browser is a request and presentation surface only. POST /api/demo/workspace owns the server-side demo session and composes human confirmation, deterministic compilation, action evaluation, redaction/private routing, approval continuation, simulated tools, adversarial fixture review, and the append-only audit ledger.
 
 Quick demo:
 
@@ -96,7 +96,34 @@ Quick demo:
 2. Review the UNCONFIRMED proposal.
 3. Enter a reviewer, check the confirmation statement, and compile.
 4. Try the redaction/private-routing presets and the blocked audit deletion.
-5. Submit a ₹7,500 refund, approve it, then continue the exact action.
+5. Submit a â‚¹7,500 refund, approve it, then continue the exact action.
 6. Run adversarial analysis and inspect the ordered audit timeline.
 
 Only synthetic data and simulated tools are used. Tests make zero live OpenAI requests.
+
+## Stage 5 â€” Deployment and submission hardening
+
+BOUNDARY is deployment-ready as a single Next.js Node application. The public demo uses the session-repository boundary: bounded memory for local development and deterministic tests, and Upstash Redis with TTL for production serverless deployment. It preserves idempotent initialization, safe reset, replay protection, bounded request throttling, safe response headers, and a minimal health route.
+
+Demo fixture mode remains the default and requires no environment variables. Live GPT-5.6 is disabled in the UI when the server has no OPENAI_API_KEY. Live failures never fall back to the fixture.
+
+Production endpoints:
+
+- GET /api/health returns only {"status":"ok"}.
+- GET /api/policies/interpret returns only live availability.
+- POST /api/policies/interpret performs bounded server-only interpretation.
+- POST /api/demo/workspace operates the ephemeral deterministic demo session.
+
+See docs/DEPLOYMENT.md, docs/THREAT_MODEL.md, and docs/SUBMISSION_CHECKLIST.md before submission.
+
+## Vercel Hobby deployment
+
+Production demo sessions require the official Upstash Redis SDK and its server-only REST variables. Missing or unavailable Redis returns a safe temporary-unavailable response. Demo fixture interpretation still requires no OpenAI key.
+
+## Production deployment
+
+BOUNDARY is deployed at [https://boundary-ai-agent-control.vercel.app](https://boundary-ai-agent-control.vercel.app) on Vercel Hobby, connected to the GitHub main branch.
+
+Demo fixture mode is the default and requires no OpenAI API key. Live GPT-5.6 mode is optional and remains server-only. The production health endpoint is [https://boundary-ai-agent-control.vercel.app/api/health](https://boundary-ai-agent-control.vercel.app/api/health).
+
+All actions, refunds, emails, approvals, and tools are synthetic or simulated. Demo sessions are ephemeral and may reset after inactivity or deployment replacement.

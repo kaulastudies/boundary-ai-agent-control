@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   DemoPreset,
   WorkspaceSnapshot,
@@ -30,10 +30,12 @@ const presets: { id: DemoPreset; label: string; detail: string }[] = [
 ];
 
 export function BoundaryWorkspace() {
+  const clientToken = useRef("");
   const [sessionId, setSessionId] = useState("");
   const [snapshot, setSnapshot] = useState<WorkspaceSnapshot | null>(null);
   const [policyText, setPolicyText] = useState(DEFAULT_DEMO_POLICY);
   const [mode, setMode] = useState<Mode>("demo");
+  const [liveAvailable, setLiveAvailable] = useState(false);
   const [reviewer, setReviewer] = useState("Build Week judge");
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState("");
@@ -53,13 +55,31 @@ export function BoundaryWorkspace() {
     setSnapshot(body.snapshot);
     return body;
   }, []);
-
-  /* eslint-disable react-hooks/set-state-in-effect -- initializing a server-owned session */
   useEffect(() => {
-    request({ command: "INIT" }).catch(() =>
+    if (!clientToken.current) clientToken.current = crypto.randomUUID();
+    request({ command: "INIT", clientToken: clientToken.current }).catch(() =>
       setNotice("Could not initialize the local demo session."),
     );
   }, [request]);
+
+  useEffect(() => {
+    fetch("/api/policies/interpret")
+      .then((response) => response.json())
+      .then((result: { available?: boolean }) =>
+        setLiveAvailable(result.available === true),
+      )
+      .catch(() => setLiveAvailable(false));
+  }, []);
+
+  async function resetSession() {
+    if (!sessionId) return;
+    await run(
+      "reset",
+      () => request({ command: "RESET", sessionId }),
+      "Demo session reset. No previous state remains.",
+    );
+    setConfirmed(false);
+  }
 
   async function run(
     label: string,
@@ -112,7 +132,13 @@ export function BoundaryWorkspace() {
     if (!confirmed) return setNotice("Check the human confirmation box first.");
     await run(
       "confirm",
-      () => request({ command: "CONFIRM", sessionId, reviewerId: reviewer }),
+      () =>
+        request({
+          command: "CONFIRM",
+          sessionId,
+          reviewerId: reviewer,
+          draft: snapshot?.draft,
+        }),
       "Human-confirmed policy compiled by deterministic code.",
     );
   }
@@ -168,9 +194,15 @@ export function BoundaryWorkspace() {
           </button>
           <button
             className={mode === "live" ? "active" : ""}
+            disabled={!liveAvailable}
+            title={
+              liveAvailable
+                ? "Use server-side GPT-5.6"
+                : "Live mode is unavailable without server configuration"
+            }
             onClick={() => setMode("live")}
           >
-            Live GPT-5.6
+            Live GPT-5.6{liveAvailable ? "" : " · unavailable"}
           </button>
         </div>
         <div className="status">
@@ -197,6 +229,16 @@ export function BoundaryWorkspace() {
       <div className="notice" role="status">
         <span>{busy ? "Working" : "Ready"}</span>
         {notice}
+      </div>
+
+      <div className="ephemeral-notice">
+        <p>
+          <b>Ephemeral demo state.</b> Sessions reset after 30 minutes of
+          inactivity or any deployment restart.
+        </p>
+        <button disabled={!sessionId || Boolean(busy)} onClick={resetSession}>
+          Reset session
+        </button>
       </div>
 
       <section className="primary-grid grid">

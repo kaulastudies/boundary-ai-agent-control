@@ -1,40 +1,58 @@
 ﻿import "server-only";
 import { z } from "zod";
+import { createDemoSessionRepository } from "@/adapters/upstash/create-demo-session-repository";
 import { DemoWorkspaceSession } from "@/application/demo/demo-workspace-session";
+import {
+  SessionCapacityError,
+  SessionRepositoryUnavailableError,
+} from "@/application/demo/session-repository";
+import {
+  FixedWindowRateLimiter,
+  rateLimitedResponse,
+  requestRateLimitKey,
+} from "@/application/http/fixed-window-rate-limiter";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const sessions = new Map<string, DemoWorkspaceSession>();
-let sessionSequence = 0;
+const repository = createDemoSessionRepository();
+const limiter = new FixedWindowRateLimiter({ limit: 60, windowMs: 60_000 });
+const sessionId = z.string().min(1).max(100);
 
 const commandSchema = z.discriminatedUnion("command", [
-  z.object({ command: z.literal("INIT") }).strict(),
+  z
+    .object({
+      command: z.literal("INIT"),
+      clientToken: z.string().min(12).max(100),
+    })
+    .strict(),
+  z.object({ command: z.literal("RESET"), sessionId }).strict(),
   z
     .object({
       command: z.literal("INTERPRET_DEMO"),
-      sessionId: z.string().min(1),
+      sessionId,
       policyText: z.string().min(20).max(12000),
     })
     .strict(),
   z
     .object({
       command: z.literal("SET_LIVE_DRAFT"),
-      sessionId: z.string().min(1),
+      sessionId,
       draft: z.unknown(),
     })
     .strict(),
   z
     .object({
       command: z.literal("CONFIRM"),
-      sessionId: z.string().min(1),
+      sessionId,
       reviewerId: z.string().min(2).max(80),
+      draft: z.unknown(),
     })
     .strict(),
   z
     .object({
       command: z.literal("SUBMIT"),
-      sessionId: z.string().min(1),
+      sessionId,
       preset: z.enum([
         "SAFE_REFUND",
         "LARGE_REFUND",
@@ -43,54 +61,65 @@ const commandSchema = z.discriminatedUnion("command", [
         "EXTERNAL_EMAIL",
         "BLOCKED_DELETE",
       ]),
-      amountInr: z.number().int().positive().max(1000000).optional(),
-      recipient: z.string().email().max(254).optional(),
     })
     .strict(),
   z
     .object({
       command: z.literal("RESOLVE"),
-      sessionId: z.string().min(1),
-      approvalId: z.string().min(1),
+      sessionId,
+      approvalId: z.string().min(1).max(100),
       resolution: z.enum(["APPROVED", "REJECTED"]),
     })
     .strict(),
   z
     .object({
       command: z.literal("EXPIRE"),
-      sessionId: z.string().min(1),
-      approvalId: z.string().min(1),
+      sessionId,
+      approvalId: z.string().min(1).max(100),
     })
     .strict(),
   z
     .object({
       command: z.literal("CONTINUE"),
-      sessionId: z.string().min(1),
-      approvalId: z.string().min(1),
+      sessionId,
+      approvalId: z.string().min(1).max(100),
     })
     .strict(),
-  z
-    .object({
-      command: z.literal("RUN_ADVERSARIAL"),
-      sessionId: z.string().min(1),
-    })
-    .strict(),
+  z.object({ command: z.literal("RUN_ADVERSARIAL"), sessionId }).strict(),
 ]);
 
 export async function POST(request: Request): Promise<Response> {
+  const rate = limiter.check(requestRateLimitKey(request));
+  if (!rate.allowed) return rateLimitedResponse(rate.retryAfterSeconds);
+
   try {
-    if (Number(request.headers.get("content-length") ?? 0) > 15000)
-      return safeError("Request is too large", 413);
-    const input = commandSchema.parse(await request.json());
+    const declaredLength = Number(request.headers.get("content-length") ?? 0);
+    if (declaredLength > 15_000) return safeError("Request is too large.", 413);
+    const body = await request.text();
+    if (body.length > 15_000) return safeError("Request is too large.", 413);
+    const input = commandSchema.parse(JSON.parse(body));
+
     if (input.command === "INIT") {
-      const sessionId = `workspace-${++sessionSequence}`;
-      const session = new DemoWorkspaceSession();
-      sessions.set(sessionId, session);
-      return Response.json({ sessionId, snapshot: session.snapshot() });
+      const record = await repository.create(input.clientToken);
+      const session = DemoWorkspaceSession.restore(record.state);
+      return Response.json({
+        sessionId: record.sessionId,
+        snapshot: session.snapshot(),
+      });
     }
-    const session = sessions.get(input.sessionId);
-    if (!session)
-      return safeError("Demo session not found; refresh to start again", 404);
+    if (input.command === "RESET") {
+      const record = await repository.reset(input.sessionId);
+      if (!record) return expiredSession();
+      return Response.json({
+        sessionId: record.sessionId,
+        snapshot: DemoWorkspaceSession.restore(record.state).snapshot(),
+      });
+    }
+
+    const record = await repository.get(input.sessionId);
+    if (!record) return expiredSession();
+    const session = DemoWorkspaceSession.restore(record.state);
+
     let snapshot;
     switch (input.command) {
       case "INTERPRET_DEMO":
@@ -100,14 +129,10 @@ export async function POST(request: Request): Promise<Response> {
         snapshot = session.setLiveDraft(input.draft);
         break;
       case "CONFIRM":
-        snapshot = session.confirm(input.reviewerId);
+        snapshot = session.confirm(input.reviewerId, input.draft);
         break;
       case "SUBMIT":
-        snapshot = session.submit(
-          input.preset,
-          input.amountInr,
-          input.recipient,
-        );
+        snapshot = session.submit(input.preset);
         break;
       case "RESOLVE":
         snapshot = session.resolve(input.approvalId, input.resolution);
@@ -122,16 +147,30 @@ export async function POST(request: Request): Promise<Response> {
         snapshot = session.runAdversarial();
         break;
     }
-    return Response.json({ sessionId: input.sessionId, snapshot });
+    await repository.save(record.sessionId, session.exportState());
+    return Response.json({ sessionId: record.sessionId, snapshot });
   } catch (error) {
-    const message =
-      error instanceof Error && !/key|secret|prompt|stack/i.test(error.message)
-        ? error.message
-        : "The request could not be completed safely";
-    return safeError(message, 400);
+    if (error instanceof SessionRepositoryUnavailableError)
+      return safeError(
+        "Demo sessions are temporarily unavailable. Please try again shortly.",
+        503,
+      );
+    if (error instanceof SessionCapacityError)
+      return safeError(
+        "The public demo is busy. Please try again shortly.",
+        503,
+      );
+    return safeError("The request could not be completed safely.", 400);
   }
 }
 
-function safeError(error: string, status: number) {
+function expiredSession(): Response {
+  return safeError(
+    "Demo session expired or was reset. Start a new session.",
+    410,
+  );
+}
+
+function safeError(error: string, status: number): Response {
   return Response.json({ error }, { status });
 }
