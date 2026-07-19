@@ -1,4 +1,4 @@
-﻿# Final Judge QA Evidence
+# Final Judge QA Evidence
 
 ## Test record
 

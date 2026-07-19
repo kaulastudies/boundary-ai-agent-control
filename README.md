@@ -1,10 +1,10 @@
-﻿<div align="center">
+<div align="center">
 
 # BOUNDARY
 
 ### AI that asks before it acts.
 
-A deterministic policy and approval layer for AI agents. BOUNDARY converts plain-English company rules into enforceable decisionsâ€”**allow, redact, route privately, require approval, or block**â€”with a human-controlled confirmation step and a complete audit trail.
+A deterministic policy and approval layer for AI agents. BOUNDARY converts plain-English company rules into enforceable decisions—**allow, redact, route privately, require approval, or block**—with a human-controlled confirmation step and a complete audit trail.
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?logo=vercel&logoColor=white)](https://boundary-ai-agent-control.vercel.app)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5.6-412991?logo=openai&logoColor=white)](https://openai.com/)
@@ -14,11 +14,11 @@ A deterministic policy and approval layer for AI agents. BOUNDARY converts plain
 [![Tests](https://img.shields.io/badge/tests-89_passing-2EA44F)](#verification)
 [![OpenAI Build Week](https://img.shields.io/badge/OpenAI_Build_Week-2026-FF6B35)](#hackathon-submission)
 
-[Live Demo](https://boundary-ai-agent-control.vercel.app) Â·
-[Documentation](./docs/README.md) Â·
-[Judge Testing Guide](./docs/JUDGE_TESTING.md) Â·
-[Architecture](./docs/ARCHITECTURE.md) Â·
-[Threat Model](./docs/THREAT_MODEL.md) Â·
+[Live Demo](https://boundary-ai-agent-control.vercel.app) ·
+[Documentation](./docs/README.md) ·
+[Judge Testing Guide](./docs/JUDGE_TESTING.md) ·
+[Architecture](./docs/ARCHITECTURE.md) ·
+[Threat Model](./docs/THREAT_MODEL.md) ·
 [Deployment](./docs/DEPLOYMENT.md)
 
 </div>
@@ -47,7 +47,7 @@ BOUNDARY places a deterministic control layer between an agent's proposed action
 | **ALLOW**            | Action is permitted by the confirmed policy    | Small refund within the automatic limit |
 | **REDACT_AND_ALLOW** | Sensitive fields are removed before processing | Cloud action containing synthetic PII   |
 | **ROUTE_PRIVATELY**  | Action must use an approved private path       | Sensitive transcript handling           |
-| **REQUIRE_APPROVAL** | Exact action pauses for a human decision       | â‚¹7,500 refund or external email       |
+| **REQUIRE_APPROVAL** | Exact action pauses for a human decision       | INR 7,500 refund or external email      |
 | **BLOCK**            | Action is prohibited                           | Attempt to delete the audit history     |
 
 ## Judge-ready workflow
@@ -58,7 +58,7 @@ BOUNDARY places a deterministic control layer between an agent's proposed action
 4. Review the `UNCONFIRMED` structured proposal.
 5. Enter a reviewer identity and confirm the policy.
 6. Test safe refund, large refund, PII cloud action, private transcript, external email, and blocked deletion.
-7. Approve or reject the â‚¹7,500 refund.
+7. Approve or reject the INR 7,500 refund.
 8. Continue the exact approved action and inspect the audit timeline.
 9. Run **Try to Break My Policy**.
 10. Reset the session and repeat.
@@ -260,19 +260,19 @@ GPT-5.6 cannot activate a policy, approve an action, execute a tool, or become t
 
 ```text
 src/
-â”œâ”€ adapters/
-â”‚  â”œâ”€ openai/        Official SDK and Responses API boundary
-â”‚  â”œâ”€ tools/         Side-effect-free simulated tools
-â”‚  â””â”€ upstash/       Production session repository
-â”œâ”€ app/api/          Health, interpretation, and workspace routes
-â”œâ”€ application/      Confirmation, approvals, control flow, audit, sessions
-â”œâ”€ domain/           Schemas and deterministic enforcement
-â”œâ”€ fixtures/         Synthetic demo policies, actions, and adversarial cases
-â””â”€ components/       Judge-ready workspace UI
+|-- adapters/
+|   |-- openai/        Official SDK and Responses API boundary
+|   |-- tools/         Side-effect-free simulated tools
+|   `-- upstash/       Production session repository
+|-- app/api/           Health, interpretation, and workspace routes
+|-- application/       Confirmation, approvals, control flow, audit, sessions
+|-- domain/            Schemas and deterministic enforcement
+|-- fixtures/          Synthetic demo policies, actions, and adversarial cases
+`-- components/        Judge-ready workspace UI
 
 tests/
-â”œâ”€ fakes/            Provider and repository fakes
-â””â”€ unit/             Deterministic unit and route tests
+|-- fakes/             Provider and repository fakes
+`-- unit/              Deterministic unit and route tests
 ```
 
 ## Team and final ownership
