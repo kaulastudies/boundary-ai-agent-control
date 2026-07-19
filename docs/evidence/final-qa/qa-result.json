@@ -1,0 +1,98 @@
+{
+  "startedAt": "2026-07-19T16:27:29.160Z",
+  "appUrl": "https://boundary-ai-agent-control.vercel.app",
+  "repoUrl": "https://github.com/kaulastudies/boundary-ai-agent-control",
+  "devpostUrl": "https://devpost.com/software/boundary-ai-that-asks-before-it-acts",
+  "youtubeUrl": "https://youtu.be/FAHQ1UxO6MA",
+  "browserRuns": [
+    {
+      "name": "Chrome desktop",
+      "channel": "chrome",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "passed": true,
+      "auditEventsObserved": 5,
+      "duplicateExecutionPrevented": true,
+      "resetVerified": true
+    },
+    {
+      "name": "Chrome mobile-width",
+      "channel": "chrome",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "passed": true,
+      "auditEventsObserved": 5,
+      "duplicateExecutionPrevented": true,
+      "resetVerified": true
+    },
+    {
+      "name": "Microsoft Edge desktop",
+      "channel": "msedge",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "passed": true,
+      "auditEventsObserved": 5,
+      "duplicateExecutionPrevented": true,
+      "resetVerified": true
+    }
+  ],
+  "publicLinks": [
+    {
+      "label": "Live demo",
+      "url": "https://boundary-ai-agent-control.vercel.app/",
+      "status": 200,
+      "title": "BOUNDARY — AI that asks before it acts"
+    },
+    {
+      "label": "GitHub repository",
+      "url": "https://github.com/kaulastudies/boundary-ai-agent-control",
+      "status": 200,
+      "title": "GitHub - kaulastudies/boundary-ai-agent-control: A deterministic policy and approval layer that asks before AI agents act. · GitHub"
+    },
+    {
+      "label": "YouTube",
+      "url": "https://youtu.be/FAHQ1UxO6MA",
+      "status": 200,
+      "title": "BOUNDARY OpenAI Build Week Concept Teaser"
+    },
+    {
+      "label": "Devpost",
+      "url": "https://devpost.com/software/boundary-ai-that-asks-before-it-acts",
+      "status": 200,
+      "title": "BOUNDARY: AI That Asks Before It Acts | Devpost"
+    }
+  ],
+  "apiChecks": {
+    "homepage": 200,
+    "health": {
+      "status": "ok"
+    },
+    "liveAvailable": false,
+    "sessionCreated": true,
+    "resetReplacedSession": true
+  },
+  "securityHeaders": {
+    "xFrameOptions": "DENY",
+    "xContentTypeOptions": "nosniff",
+    "referrerPolicy": "no-referrer",
+    "permissionsPolicy": "camera=(), microphone=(), geolocation=()",
+    "crossOriginOpenerPolicy": "same-origin"
+  },
+  "screenshots": [
+    "01-main-workspace.png",
+    "02-unconfirmed-policy.png",
+    "03-refund-requires-approval.png",
+    "04-approved-continuation-and-audit.png",
+    "05-try-to-break-policy-results.png",
+    "06-ordered-audit-timeline.png",
+    "07-devpost-public-page.png"
+  ],
+  "completedAt": "2026-07-19T16:27:59.320Z",
+  "passed": true
+}

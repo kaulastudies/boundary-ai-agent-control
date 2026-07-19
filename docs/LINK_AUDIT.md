@@ -11,10 +11,10 @@
 ## Summary
 
 - Checked: 2026-07-19 (UTC)
-- Markdown files: 11
-- Local references and anchors: 76
+- Markdown files: 12
+- Local references and anchors: 84
 - Local failures: 0
-- External URLs: 19
+- External URLs: 21
 - Definite external failures: 0
 - External warnings: 1
 
@@ -26,6 +26,7 @@ Warnings generally indicate bot protection, authentication, rate limiting, or tr
 | ------ | ---: | ------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | PASS   |  200 | https://boundary-ai-agent-control.vercel.app/                                         | Reachable                                       |
 | PASS   |  200 | https://boundary-ai-agent-control.vercel.app/api/health                               | Reachable                                       |
+| PASS   |  200 | https://devpost.com/software/boundary-ai-that-asks-before-it-acts                     | Reachable                                       |
 | PASS   |  200 | https://github.com/kaulastudies/boundary-ai-agent-control                             | Reachable                                       |
 | PASS   |  200 | https://github.com/kaulastudies/boundary-ai-agent-control.git                         | Reachable                                       |
 | PASS   |  200 | https://github.com/kaulastudies/boundary-ai-agent-control/issues/1                    | Reachable                                       |
@@ -43,6 +44,7 @@ Warnings generally indicate bot protection, authentication, rate limiting, or tr
 | PASS   |  200 | https://nextjs.org/                                                                   | Reachable                                       |
 | WARN   |  403 | https://openai.com/                                                                   | Reachable but access-controlled or rate-limited |
 | PASS   |  200 | https://www.typescriptlang.org/                                                       | Reachable                                       |
+| PASS   |  200 | https://youtu.be/FAHQ1UxO6MA                                                          | Reachable                                       |
 
 ## Local failures
 
