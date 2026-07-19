@@ -15,6 +15,7 @@ A deterministic policy and approval layer for AI agents. BOUNDARY converts plain
 [![OpenAI Build Week](https://img.shields.io/badge/OpenAI_Build_Week-2026-FF6B35)](#hackathon-submission)
 
 [Live Demo](https://boundary-ai-agent-control.vercel.app) ·
+[Documentation](./docs/README.md) ·
 [Judge Testing Guide](./docs/JUDGE_TESTING.md) ·
 [Architecture](./docs/ARCHITECTURE.md) ·
 [Threat Model](./docs/THREAT_MODEL.md) ·
@@ -63,6 +64,12 @@ BOUNDARY places a deterministic control layer between an agent's proposed action
 10. Reset the session and repeat.
 
 No account or credentials are required. All records, refunds, emails, approvals, and tools are synthetic or simulated.
+
+## Public deployment status
+
+The public Vercel deployment intentionally defaults to **Demo fixture** and currently reports Live GPT-5.6 as unavailable. The official server-only Responses API adapter remains implemented, but no funded API quota is attached to the public deployment. Judges can run the complete policy, approval, adversarial-analysis, and audit workflow without credentials.
+
+No OpenAI key is committed, exposed to client code, included in documentation, or stored in Git. Enabling the optional live path later requires only a funded server-side `OPENAI_API_KEY`; no enforcement-code change is required.
 
 ## Architecture
 
@@ -173,6 +180,7 @@ The Upstash names take precedence when both pairs exist. No credential is expose
 npm run dev
 npm run format
 npm run format:check
+npm run docs:check
 npm run lint
 npm run typecheck
 npm test
@@ -185,6 +193,9 @@ npm start
 Current verified release:
 
 - **89 automated tests passing**
+- Documentation and link audit passing
+- Public no-key judge path passing
+- Live availability intentionally reports `false`
 - ESLint passing
 - TypeScript typecheck passing
 - Next.js production build passing
@@ -267,7 +278,7 @@ tests/
 ## Team and tracked work
 
 - **Rama Chandra M** — project lead, architecture, deterministic engine, OpenAI integration, deployment, and submission.
-- **Naboth Daniel** — QA and documentation contributor; post-submission work is tracked transparently below.
+- **Naboth Daniel** — invited teammate for QA and documentation; assigned post-submission work is tracked transparently below.
 
 | Task                                                                                                             | Status |
 | ---------------------------------------------------------------------------------------------------------------- | ------ |
@@ -276,7 +287,11 @@ tests/
 | [README and judge-instructions review](https://github.com/kaulastudies/boundary-ai-agent-control/issues/3)       | Open   |
 | [Final live regression evidence](https://github.com/kaulastudies/boundary-ai-agent-control/issues/4)             | Open   |
 
-Milestone: **Post-submission polish — Judge readiness**
+Milestone: [**Post-submission polish — Judge readiness**](https://github.com/kaulastudies/boundary-ai-agent-control/milestone/1)
+
+## License
+
+BOUNDARY is available under the [MIT License](./LICENSE).
 
 ## Hackathon submission
 

@@ -1,4 +1,12 @@
-﻿# Judge Testing Guide
+# Judge Testing Guide
+
+<!-- boundary-doc-nav:start -->
+
+> **BOUNDARY documentation** · [Overview](../README.md) · [Docs index](./README.md) · [Architecture](./ARCHITECTURE.md) · [Demo](./DEMO_SCRIPT.md) · [Judge testing](./JUDGE_TESTING.md) · [Deployment](./DEPLOYMENT.md) · [Threat model](./THREAT_MODEL.md)
+
+<!-- boundary-doc-nav:end -->
+
+---
 
 ## No-key path
 
@@ -17,9 +25,9 @@ Verify:
 - adversarial scenarios report outcomes but do not execute;
 - audit events remain ordered and append-only.
 
-## Live path
+## Optional operator-enabled live path
 
-Configure OPENAI_API_KEY only in the server runtime and optionally set OPENAI_MODEL (default gpt-5.6). Select Live GPT-5.6. The response remains unconfirmed and cannot activate policy without the separate reviewer step.
+The public judge deployment intentionally has no `OPENAI_API_KEY`; use Demo fixture for evaluation. An operator with funded API quota may configure the key only in the server runtime and optionally set `OPENAI_MODEL` (default `gpt-5.6`). The response remains unconfirmed and cannot activate policy without the separate reviewer step.
 
 ## Verification commands
 
@@ -48,3 +56,10 @@ Run npm run format, npm run lint, npm test, npm run typecheck, npm run build, an
 Run the judge workflow at https://boundary-ai-agent-control.vercel.app. Confirm https://boundary-ai-agent-control.vercel.app/api/health returns only the safe health status before testing.
 
 Use Demo fixture mode for the primary no-key path. Live GPT-5.6 is optional and server-only. Treat every ticket, action, refund, email, approval, and tool result as synthetic or simulated. If the session expires after inactivity or a deployment replacement, refresh and start a new demo session.
+
+<!-- boundary-doc-footer:start -->
+
+---
+
+[Documentation index](./README.md) · [Live demo](https://boundary-ai-agent-control.vercel.app) · [Repository](https://github.com/kaulastudies/boundary-ai-agent-control)
+<!-- boundary-doc-footer:end -->

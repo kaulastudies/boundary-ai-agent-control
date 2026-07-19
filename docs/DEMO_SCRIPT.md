@@ -1,4 +1,12 @@
-﻿# BOUNDARY Demo Script
+# BOUNDARY Demo Script
+
+<!-- boundary-doc-nav:start -->
+
+> **BOUNDARY documentation** · [Overview](../README.md) · [Docs index](./README.md) · [Architecture](./ARCHITECTURE.md) · [Demo](./DEMO_SCRIPT.md) · [Judge testing](./JUDGE_TESTING.md) · [Deployment](./DEPLOYMENT.md) · [Threat model](./THREAT_MODEL.md)
+
+<!-- boundary-doc-nav:end -->
+
+---
 
 ## Three-minute golden path
 
@@ -13,7 +21,7 @@
 
 ## Optional live interpretation
 
-Switch to Live GPT-5.6 only when OPENAI_API_KEY is configured server-side. Live mode calls POST /api/policies/interpret and returns the same unconfirmed contract. A provider failure is reported clearly; there is no fixture fallback.
+The public judge deployment intentionally keeps Live GPT-5.6 unavailable. An operator may enable it only with a funded server-side `OPENAI_API_KEY`. Live mode calls `POST /api/policies/interpret`, returns the same unconfirmed contract, and never falls back silently to the fixture.
 
 ## Stage 5 production rehearsal
 
@@ -28,3 +36,10 @@ The header marks Live GPT-5.6 unavailable when no server key exists. Do not swit
 - Platform: Vercel Hobby connected to GitHub main
 
 Demo fixture mode is the default and needs no API key. Live GPT-5.6 is optional and server-only. All actions, refunds, emails, and tools shown during the script are simulated. If inactivity or a deployment replacement clears the ephemeral session, refresh and restart from interpretation.
+
+<!-- boundary-doc-footer:start -->
+
+---
+
+[Documentation index](./README.md) · [Live demo](https://boundary-ai-agent-control.vercel.app) · [Repository](https://github.com/kaulastudies/boundary-ai-agent-control)
+<!-- boundary-doc-footer:end -->

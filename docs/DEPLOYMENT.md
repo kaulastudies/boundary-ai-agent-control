@@ -1,4 +1,12 @@
-﻿# Deployment
+# Deployment
+
+<!-- boundary-doc-nav:start -->
+
+> **BOUNDARY documentation** · [Overview](../README.md) · [Docs index](./README.md) · [Architecture](./ARCHITECTURE.md) · [Demo](./DEMO_SCRIPT.md) · [Judge testing](./JUDGE_TESTING.md) · [Deployment](./DEPLOYMENT.md) · [Threat model](./THREAT_MODEL.md)
+
+<!-- boundary-doc-nav:end -->
+
+---
 
 ## Vercel Hobby
 
@@ -33,6 +41,10 @@ The Upstash names take precedence when both pairs are present. The application n
 
 Demo fixture mode remains the default and does not require OPENAI_API_KEY. Live mode remains unavailable when that key is absent and never silently falls back.
 
+## Current public judge mode
+
+The production deployment intentionally omits `OPENAI_API_KEY` because no funded API quota is attached. Demo fixture remains the complete primary judge path, and Live GPT-5.6 reports unavailable instead of repeatedly returning provider quota errors. Keep `OPENAI_MODEL=gpt-5.6` as non-sensitive configuration if desired. Do not add a key unless the associated API project has usable billing or promotional API quota.
+
 ## Persistence behavior
 
 Production uses Upstash Redis only. Sessions use secure random identifiers and a 30-minute TTL that refreshes on access. Reset creates a new empty session. If Redis configuration is missing or Upstash is unavailable, the API returns a safe temporary-unavailable response; production never falls back to process memory.
@@ -61,3 +73,10 @@ Local development and tests use the bounded in-memory repository when NODE_ENV i
 Demo fixture mode is the default and requires no OpenAI API key. Live GPT-5.6 mode is optional, uses only server-side environment configuration, and never silently falls back.
 
 All demonstrated actions, refunds, emails, and tools are simulated. Demo session state is ephemeral and may expire after inactivity or reset during a deployment replacement.
+
+<!-- boundary-doc-footer:start -->
+
+---
+
+[Documentation index](./README.md) · [Live demo](https://boundary-ai-agent-control.vercel.app) · [Repository](https://github.com/kaulastudies/boundary-ai-agent-control)
+<!-- boundary-doc-footer:end -->

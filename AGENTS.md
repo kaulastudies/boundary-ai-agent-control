@@ -1,18 +1,26 @@
-﻿# Repository Guidelines
+# Repository Guidelines
+
+<!-- boundary-doc-nav:start -->
+
+> **Project documentation** · [Overview](./README.md) · [Docs index](./docs/README.md) · [Architecture](./docs/ARCHITECTURE.md) · [Judge testing](./docs/JUDGE_TESTING.md) · [Deployment](./docs/DEPLOYMENT.md)
+
+<!-- boundary-doc-nav:end -->
+
+---
 
 ## Repository State
 
 BOUNDARY is an OpenAI Build Week agent-control application. The default branch is `main`, and `origin` points to `https://github.com/kaulastudies/boundary-ai-agent-control.git`.
 
-The Stage 1 foundation uses:
+The current production-ready foundation uses:
 
 - Next.js App Router with strict TypeScript and Tailwind CSS.
 - npm exclusively; `package-lock.json` is the only accepted lockfile.
 - Zod for runtime schemas and Vitest for unit tests.
 - The official OpenAI JavaScript SDK in server-only adapters.
-- The OpenAI Responses API and `gpt-5.6` when model integration is introduced.
+- The OpenAI Responses API and `gpt-5.6` for the implemented bounded model integration.
 
-Canonical verification commands are `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`.
+Canonical verification commands are `npm run format:check`, `npm run docs:check`, `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`.
 
 ## Product Boundary
 
@@ -60,8 +68,15 @@ Review control changes for secure defaults, explicit failure behavior, auditabil
 
 ## Commit and Pull Request Guidance
 
-There is no established project history from which to infer a commit convention. Until maintainers select one, use short imperative subjects describing the concrete change, and avoid claiming compatibility or test coverage that was not verified. Pull requests should state scope, decisions introduced, commands run, and security or policy-boundary impact. Never commit or push unless explicitly requested.
+Use short imperative commit subjects describing the concrete change, and avoid claiming compatibility or test coverage that was not verified. Pull requests should state scope, decisions introduced, commands run, and security or policy-boundary impact. Never commit or push unless explicitly requested.
 
 ## Stage 5 runtime guidance
 
 Production deployment uses Vercel server functions and the server-only Upstash Redis session repository. Local development and deterministic tests use the bounded in-memory repository. Sessions expire by TTL and reset replaces stored state. Do not add authentication, broader persistence, or real integrations during the hackathon submission stage.
+
+<!-- boundary-doc-footer:start -->
+
+---
+
+[Project overview](./README.md) · [Documentation index](./docs/README.md) · [Live demo](https://boundary-ai-agent-control.vercel.app)
+<!-- boundary-doc-footer:end -->

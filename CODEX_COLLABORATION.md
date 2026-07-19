@@ -1,4 +1,12 @@
-﻿# Codex Collaboration
+# Codex Collaboration
+
+<!-- boundary-doc-nav:start -->
+
+> **Project documentation** · [Overview](./README.md) · [Docs index](./docs/README.md) · [Architecture](./docs/ARCHITECTURE.md) · [Judge testing](./docs/JUDGE_TESTING.md) · [Deployment](./docs/DEPLOYMENT.md)
+
+<!-- boundary-doc-nav:end -->
+
+---
 
 ## Working agreement
 
@@ -54,3 +62,16 @@ Codex replaced only demo-session persistence. Deterministic policy compilation, 
 ## Production handoff record
 
 The documented production target is Vercel Hobby connected to the GitHub main branch at https://boundary-ai-agent-control.vercel.app. The judge path defaults to the no-key Demo fixture; optional GPT-5.6 access remains server-only. Documentation explicitly identifies every action, refund, email, and tool as simulated and treats demo-session state as ephemeral across inactivity and deployment replacement.
+
+## Submission polish and current public mode
+
+Codex assisted with documentation normalization, link verification, license addition, and final release checks without changing deterministic enforcement behavior. The public deployment intentionally keeps Live GPT-5.6 unavailable because no funded API quota is attached. The official server-only Responses API adapter remains implemented, while judges use the complete no-key Demo fixture workflow.
+
+No OpenAI key is committed or exposed. The final release retains the same human-confirmation boundary, deterministic decisions, simulated tools, Redis-backed ephemeral sessions, and safe failure behavior.
+
+<!-- boundary-doc-footer:start -->
+
+---
+
+[Project overview](./README.md) · [Documentation index](./docs/README.md) · [Live demo](https://boundary-ai-agent-control.vercel.app)
+<!-- boundary-doc-footer:end -->
