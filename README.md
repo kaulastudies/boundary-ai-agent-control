@@ -279,6 +279,7 @@ tests/
 
 - **Rama Chandra M** - project lead; architecture, deterministic engine, OpenAI integration, deployment, submission, final QA, documentation, and release evidence.
 - **Naboth Daniel** - teammate and project participant; included in the team record and invited to support QA and documentation.
+- **Rameen** - teammate who joined during the final submission stage and is providing crucial last-hours support for the demo presentation, voice-over narration, and final submission readiness.
 - With the final deadline approaching, Rama completed the remaining tracked judge-readiness tasks directly so the submission would not be delayed.
 
 | Task                                                                                                             | Final status      |
